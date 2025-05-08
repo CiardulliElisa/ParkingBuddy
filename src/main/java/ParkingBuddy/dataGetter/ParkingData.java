@@ -11,7 +11,6 @@ import java.util.*;
 
 public class ParkingData extends GetData {
 
-    /*List<ParkingStation> parkingData = new ArrayList<>();*/
 
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in
