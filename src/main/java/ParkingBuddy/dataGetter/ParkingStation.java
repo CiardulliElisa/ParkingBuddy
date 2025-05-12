@@ -3,7 +3,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public class ParkingStation {
+@DataType(name = "ParkingStation")
+public class ParkingStation extends OpenData{
 
     private String scode;
     private String sname;
