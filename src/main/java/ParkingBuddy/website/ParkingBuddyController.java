@@ -48,6 +48,23 @@ public class ParkingBuddyController{
         }
     }
 
+
+//shows how to display a graph
+//    @GetMapping("/")
+//    public String home() {
+//        return "redirect:/chart"; //opens home.html
+//    }
+//
+//    @GetMapping("/chart")
+//    public String getChart(Model model) throws IOException {
+//        List<DataPoint> dataPoints = chartService.getDataPoints();
+//        model.addAttribute("dataPoints", dataPoints);
+//        return "chart";
+//    }
+//}
+
+
+
 //    @GetMapping("/")
 //    public String home() {
 //        return "redirect:/hello"; //opens home.html
