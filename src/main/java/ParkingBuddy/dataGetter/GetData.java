@@ -15,7 +15,9 @@ public abstract class GetData {
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in
     // @param code - the code of the parking lot we are interested in
-    public abstract ParkingStation getData(LocalDateTime startDate, LocalDateTime endDate, int code) throws IOException;
+    public static ParkingStation getData(LocalDateTime startDate, LocalDateTime endDate, String name) throws IOException {
+        return null;
+    }
 
     // Returns an access token that is used to retrieve data for 48 hours
     public static String generateAccessToken() throws IOException {

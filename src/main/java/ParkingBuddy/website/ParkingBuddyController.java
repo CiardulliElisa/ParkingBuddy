@@ -1,12 +1,14 @@
 package ParkingBuddy.website;
-import ParkingBuddy.hello.HelloWorld;
+import ParkingBuddy.dataGetter.ParkingData;
+import ParkingBuddy.dataGetter.ParkingStation;
 
-import java.util.List;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -14,8 +16,29 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ParkingBuddyController{
 
 	@GetMapping("/")
-    public String home() {
-        return "home"; //opens home.html
+    public String home(Model model) {
+        Set<String> stationNames = ParkingData.findAll();
+        model.addAttribute("stationNames", stationNames);
+        return "home"; // Opens home.html
+    }
+
+    @GetMapping("/api/stationData")
+    @ResponseBody
+    public ParkingStation getStationData(@RequestParam String name) {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime oneYearAgo = now.minusYears(1);
+            ParkingStation station = ParkingData.getData(oneYearAgo, now, name);
+            if (station != null) {
+                System.out.println("Found parking station: " + station);
+            } else {
+                System.out.println("Parking station not found for: " + name);
+            }
+            return station;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     //will be removed
