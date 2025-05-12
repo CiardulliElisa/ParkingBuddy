@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th = "http://www.thymeleaf.org">
+<head>
+    <title>Chart</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+</head>
+<body>
+<div id="chart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+<script th:inline = "javascript">
+    var dataPoints = /*[[${dataPoints}]]*/ [];
+    Highcharts.chart('chart', {
+        title: {
+            text: 'Line Chart Example'
+        },
+        xAxis: {
+            categories: dataPoints.map(function(point) {
+                return point.label;
+            })
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
+            }
+        },
+        series: [{
+            type: 'line',
+            name: 'Line 1',
+            data: dataPoints.map(function(point) {
+                return point.value;
+            })
+        }]
+    });
+</script>
+</body>
+</html>

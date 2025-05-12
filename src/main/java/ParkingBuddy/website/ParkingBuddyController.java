@@ -1,4 +1,5 @@
 package ParkingBuddy.website;
+import ParkingBuddy.chartPoint.ChartService;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 
@@ -6,14 +7,20 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.IOException;
+import java.util.List;
+
 @Controller
 public class ParkingBuddyController{
+    private final ChartService chartService = new ChartService();
 
 	@GetMapping("/")
     public String home(Model model) {
@@ -50,6 +57,8 @@ public class ParkingBuddyController{
     			new Point("Location B", 34.0522, -118.2437)
     			);
     }
+
+
     public static class Point {
         public String name;
         public double lat;
@@ -61,6 +70,23 @@ public class ParkingBuddyController{
             this.lng = lng;
         }
     }
+
+
+//shows how to display a graph
+//    @GetMapping("/")
+//    public String home() {
+//        return "redirect:/chart"; //opens home.html
+//    }
+//
+//    @GetMapping("/chart")
+//    public String getChart(Model model) throws IOException {
+//        List<DataPoint> dataPoints = chartService.getDataPoints();
+//        model.addAttribute("dataPoints", dataPoints);
+//        return "chart";
+//    }
+//}
+
+
 
 //    @GetMapping("/")
 //    public String home() {

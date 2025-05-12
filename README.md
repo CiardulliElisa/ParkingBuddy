@@ -8,12 +8,17 @@
   - Filter Location, Search Bar Parking
 
 - 15th May ->
-  - Graph
-  - Test
-  - Parking nearby
+  - Graph (done)
+  - Prediction (Johanna)
+  - Data get Geschwindigkeit (Elisa)
+  - Map -> arrays/ArrayList (Elisa)
+  - Parkplätze auf Map anzeigen (Elisabeth)
+  - Tag auswählen für Prediction/ Website (Johanna)
 
 - 19th May ->
   - New functionality*
+  - Test
+  - Parking nearby 
 
 - 26th May
   - Project Finished

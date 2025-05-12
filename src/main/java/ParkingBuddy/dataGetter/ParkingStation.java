@@ -6,7 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class ParkingStation {
+@DataType(name = "ParkingStation")
+public class ParkingStation extends OpenData{
 
     private String municipality;
     private Point coordinates;
