@@ -1,3 +1,4 @@
+/*
 package ParkingBuddy.Prediction;
 
 import ParkingBuddy.dataGetter.ParkingData;
@@ -20,7 +21,9 @@ public class ParkingStationModel implements Model {
 	public LocalDateTime date;
 	public LocalDateTime startDate;
 	public LocalDateTime endDate;
-	/*public Object[] data;*/
+	*/
+/*public Object[] data;*//*
+
 
 
 	 public ParkingStation hourAverage(ParkingStation aLotOfTimestamps){
@@ -75,10 +78,12 @@ public class ParkingStationModel implements Model {
 
 	 }
 
+*/
 /*	@Override
 	public void modelData() {
 		// TODO Auto-generated method stub
-	}*/
+	}*//*
+
 
 //	@Override
 //	public Object[] getPrediction(LocalDateTime date) {
@@ -111,3 +116,4 @@ public class ParkingStationModel implements Model {
 //	}
 
 
+*/

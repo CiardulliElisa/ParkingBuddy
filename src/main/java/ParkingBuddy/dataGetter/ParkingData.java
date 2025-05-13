@@ -127,7 +127,7 @@ public class ParkingData extends GetData {
     }
 
     public static Set<String> findAll() {
-        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest?limit=-1&offset=0&shownull=false&distinct=true&select=smetadata.name_en";
+        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest?limit=-1&offset=0&shownull=false&pactive.eq.true&distinct=true&select=smetadata.name_en";
         Set<String> stations = new HashSet<>();
 
         try {

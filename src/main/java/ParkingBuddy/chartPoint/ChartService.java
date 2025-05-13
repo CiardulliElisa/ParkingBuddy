@@ -1,3 +1,4 @@
+/*
 package ParkingBuddy.chartPoint;
 
 import ParkingBuddy.dataGetter.ParkingData;
@@ -28,3 +29,4 @@ public class ChartService {
         return dataPoints;
     }
 }
+*/

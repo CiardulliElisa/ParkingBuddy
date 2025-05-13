@@ -1,5 +1,5 @@
 package ParkingBuddy.website;
-import ParkingBuddy.chartPoint.ChartService;
+/*import ParkingBuddy.chartPoint.ChartService;*/
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 
@@ -20,7 +20,7 @@ import java.util.List;
 
 @Controller
 public class ParkingBuddyController{
-    private final ChartService chartService = new ChartService();
+    //private final ChartService chartService = new ChartService();
 
 	@GetMapping("/")
     public String home(Model model) {
@@ -34,7 +34,7 @@ public class ParkingBuddyController{
     public ParkingStation getStationData(@RequestParam String name) {
         try {
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime oneYearAgo = now.minusYears(1);
+            LocalDateTime oneYearAgo = now.minusMonths(1);
             ParkingStation station = ParkingData.getData(oneYearAgo, now, name);
             if (station != null) {
                 System.out.println("Found parking station: " + station);
