@@ -2,6 +2,7 @@ package ParkingBuddy.website;
 /*import ParkingBuddy.chartPoint.ChartService;*/
 import ParkingBuddy.chartPoint.ChartService;
 import ParkingBuddy.chartPoint.DataPoint;
+import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 
@@ -9,7 +10,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,67 +17,40 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.IOException;
 import java.util.List;
 
 @Controller
 public class ParkingBuddyController{
     private final ChartService chartService = new ChartService();
-    private final Set<String> stationNames = ParkingData.findAll();
+    private final Set<ParkingStation> allStations = ParkingData.findLatestData(null);
 
 	@GetMapping("/")
     public String home(Model model) {
-//        Set<String> stationNames = ParkingData.findAll();
-        model.addAttribute("stationNames", stationNames);
-        return "home"; // Opens home.html
+        model.addAttribute("allStations", allStations);
+        return "home";
     }
 
     @PostMapping("/home")
     public String greetingSubmit(@RequestParam String date, Model model) {
-        model.addAttribute("stationNames", stationNames);
+        model.addAttribute("stationNames", allStations);
         return "redirect:/chart";
     }
 
     @GetMapping("/api/stationData")
     @ResponseBody
     public ParkingStation getStationData(@RequestParam String name) {
-        try {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime oneYearAgo = now.minusMonths(1);
-            ParkingStation station = ParkingData.getData(oneYearAgo, now, name);
-            if (station != null) {
-                System.out.println("Found parking station: " + station);
-            } else {
-                System.out.println("Parking station not found for: " + name);
-            }
-            return station;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Set<ParkingStation> stations = ParkingData.findLatestData(name);
+        return stations.stream().findFirst().orElse(null);
     }
 
     //will be removed
     @GetMapping("/api/points")
     @ResponseBody
-    public List<Point> getPoints() {
-    	return List.of(
-    			new Point("Sarntal", 46.638780, 11.350111),
-    			new Point("Location B", 34.0522, -118.2437)
-    			);
-    }
-
-
-    public static class Point {
-        public String name;
-        public double lat;
-        public double lng;
-
-        public Point(String name, double lat, double lng) {
-            this.name = name;
-            this.lat = lat;
-            this.lng = lng;
-        }
+    public List<Coordinate> getPoints() {
+        return List.of(
+                new Coordinate(46.638780, 11.350111),
+                new Coordinate( 34.0522, -118.2437)
+        );
     }
 
 
@@ -91,7 +64,7 @@ public class ParkingBuddyController{
     public String getChart(Model model) throws IOException {
         List<DataPoint> dataPoints = chartService.getDataPoints();
         model.addAttribute("dataPoints", dataPoints);
-        model.addAttribute("stationNames", stationNames);
+        model.addAttribute("stationNames", allStations);
         return "chart";
     }
 //}

@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 public class ParkingData extends GetData {
@@ -35,14 +36,12 @@ public class ParkingData extends GetData {
             int responseCode = connection.getResponseCode();
 
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    System.out.println("responseCode == HttpURLConnection.HTTP_OK");
                     Scanner scanner = new Scanner(connection.getInputStream());
                     StringBuilder response = new StringBuilder();
                     while (scanner.hasNextLine()) {
                         response.append(scanner.nextLine());
                 }
                 scanner.close();
-                System.out.println(response);
                 return parseParkingStationData(response.toString());
 
             } else {
@@ -67,9 +66,10 @@ public class ParkingData extends GetData {
 
         JsonNode firstElement = dataArray.get(0);
 
+        String name = firstElement.get("sname").asText();
+
         int period = firstElement.get("mperiod").asInt();
         int code = firstElement.get("scode").asInt();
-        String name = firstElement.get("smetadata.name_en").asText();
         String municipality = firstElement.get("smetadata.municipality").asText();
         int capacity = firstElement.get("smetadata.capacity").asInt();
 
@@ -77,7 +77,7 @@ public class ParkingData extends GetData {
         JsonNode coordinateNode = firstElement.get("scoordinate");
         double longitude = coordinateNode.get("x").asDouble();
         double latitude = coordinateNode.get("y").asDouble();
-        Point coordinates = new Point ((int)longitude, (int) latitude);
+        Coordinate coordinates = new Coordinate (longitude, latitude);
 
         ArrayList<LocalDateTime> timestamps = new ArrayList<>();
         ArrayList<Integer> free_spots = new ArrayList<>();
@@ -90,16 +90,12 @@ public class ParkingData extends GetData {
                 continue;
             }
             LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
-
-            // Get the value (mvalue)
             int value = node.get("mvalue").asInt();
 
             timestamps.add(timestamp);
             free_spots.add(value);
         }
-        ParkingStation p1 = new ParkingStation(name, code, period, municipality, capacity, coordinates, timestamps, free_spots);
-        System.out.println(p1);
-        return p1;
+        return new ParkingStation(name, code, period, municipality, capacity, coordinates, timestamps, free_spots);
     }
 
     private static String formatDate(LocalDateTime date) {
@@ -112,23 +108,27 @@ public class ParkingData extends GetData {
         return "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/" +
                 formatDate(startDate) + "/"+
                 formatDate(endDate) +
-                "?limit=-1&offset=0&where=smetadata.name_en.eq.%22" +
+                "?limit=-1&offset=0&where=sname.eq.%22" +
                 name +
-                "%22&where=tdescription.eq.free&shownull=false&distinct=true&timezone=UTC&select=mvalue,mvalidtime,mperiod,scode,tname,scoordinate,smetadata.capacity,smetadata.name_en,smetadata.municipality";
+                "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC&select=mvalue,mvalidtime,mperiod,scode,tname,scoordinate,smetadata.capacity,sname,smetadata.municipality";
     };
 
-    public static void main(String[] args) throws IOException {
-        ParkingData pd = new ParkingData();
-        LocalDateTime start = LocalDateTime.of(2025, 4, 29, 10, 0);
-        LocalDateTime end = LocalDateTime.of(2025, 4, 30, 23, 0);
-        String name = "Piazza Walther";
-        pd.getData(start, end, name);
-        pd.findAll();
-    }
+    public static Set<ParkingStation> findLatestData(String nameInput) {
+        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest?limit=-1&offset=0&shownull=false&distinct=true&where=tname.eq.free";
 
-    public static Set<String> findAll() {
-        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest?limit=-1&offset=0&shownull=false&pactive.eq.true&distinct=true&select=smetadata.name_en";
-        Set<String> stations = new HashSet<>();
+        // if there is no name, then the data for all stations should be fetched
+        if(nameInput == null) {
+            System.out.println("all stations");
+            url += "&select=scoordinate,sname";
+        }
+        // if a name is given fetch the latest data for that station
+        else {
+            nameInput = URLEncoder.encode(nameInput, StandardCharsets.UTF_8);
+            System.out.println("Station: " + nameInput);
+            url += "&where=sname.eq." + nameInput + "&select=mvalue,mvalidtime,mperiod,scode,tname,scoordinate,smetadata.capacity,sname,smetadata.municipality";
+        }
+
+        Set<ParkingStation> stations = new HashSet<>();
 
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -136,15 +136,65 @@ public class ParkingData extends GetData {
             JsonNode dataArray = root.path("data");
 
             for (JsonNode entry : dataArray) {
-                String name = entry.path("smetadata.name_en").asText();
-                if (!"test-en".equalsIgnoreCase(name) && !name.isEmpty()) {
-                    stations.add(name);
+                String name = entry.path("sname").asText(null);
+
+                JsonNode coordNode = entry.path("scoordinate");
+                double x = coordNode.path("x").asDouble();
+                double y = coordNode.path("y").asDouble();
+                Coordinate coordinates = new Coordinate(x, y);
+
+                // If name is null -> minimal data
+                if (nameInput == null) {
+                    ParkingStation station = new ParkingStation(name, 0, 0, "", 0, coordinates, new ArrayList<>(), new ArrayList<>());
+                    stations.add(station);
+                } else {
+                    // Full data parsing
+                    int code = entry.path("scode").asInt();
+                    int period = entry.path("mperiod").asInt();
+                    int capacity = entry.path("smetadata.capacity").asInt();
+                    String municipality = entry.path("smetadata.municipality").asText("");
+
+                    ArrayList<LocalDateTime> timestamps = new ArrayList<>();
+                    ArrayList<Integer> free_spots = new ArrayList<>();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
+
+                    // Iterate over all elements in the rootNode array
+                    for (JsonNode node : dataArray) {
+                        String timestampStr = node.get("_timestamp").asText();
+                        if (timestampStr == null || timestampStr.isEmpty()) {
+                            continue;
+                        }
+                        LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
+                        int value = node.get("mvalue").asInt();
+
+                        timestamps.add(timestamp);
+                        free_spots.add(value);
+                    }
+
+                    // Build ParkingStation once per station name (grouped data)
+                    ParkingStation station = new ParkingStation(
+                        name,
+                        code,
+                        period,
+                        municipality,
+                        capacity,
+                        coordinates,
+                        timestamps,
+                        free_spots
+                        );
+                        stations.add(station);
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return stations;
+}
+
+    public static void main(String[] args) {
+        //ParkingData.findLatestData(null);
+        ParkingData.findLatestData("Park Plaza");
+
     }
 }

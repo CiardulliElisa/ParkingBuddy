@@ -7,10 +7,10 @@ import java.net.URLEncoder;
 import java.time.LocalDateTime;
 
 public abstract class GetData {
+
     private static final String TOKEN_URL = "https://auth.opendatahub.com/auth/realms/noi/protocol/openid-connect/token";
     private static final String CLIENT_ID = "opendatahub-bootcamp-2025";
     private static final String CLIENT_SECRET = "QiMsLjDpLi5ffjKRkI7eRgwOwNXoU9l1";
-    private static final String API_URL = "https://api.opendatahub.com/your-api-endpoint";
 
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in

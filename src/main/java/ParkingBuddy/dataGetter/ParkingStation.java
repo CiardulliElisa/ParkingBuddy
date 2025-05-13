@@ -1,16 +1,14 @@
 package ParkingBuddy.dataGetter;
 
 import java.awt.*;
-import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Map;
 
 @DataType(name = "ParkingStation")
 public class ParkingStation extends OpenData{
 
     private String municipality;
-    private Point coordinates;
+    private Coordinate coordinates;
     private int capacity;
     private int code;
     private String name;
@@ -20,7 +18,7 @@ public class ParkingStation extends OpenData{
     private ArrayList<Integer> free_spots;
 
     // Constructor
-    public ParkingStation(String name, int code, int period, String municipality, int capacity, Point coordinates, ArrayList<LocalDateTime> timestamps, ArrayList<Integer> free_spots) {
+    public ParkingStation(String name, int code, int period, String municipality, int capacity, Coordinate coordinates, ArrayList<LocalDateTime> timestamps, ArrayList<Integer> free_spots) {
         this.code = code;
         this.name = name;
         this.coordinates = coordinates;
@@ -56,11 +54,11 @@ public class ParkingStation extends OpenData{
         this.municipality = municipality;
     }
 
-    public Point getCoordinates() {
+    public Coordinate getCoordinates() {
         return coordinates;
     }
 
-    public void setCoordinates(Point coordinates) {
+    public void setCoordinates(Coordinate coordinates) {
         this.coordinates = coordinates;
     }
 
@@ -112,6 +110,19 @@ public class ParkingStation extends OpenData{
                 ", timestamps=" + timestamps +
                 ", free_spots=" + free_spots +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ParkingStation)) return false;
+        ParkingStation other = (ParkingStation) obj;
+        return name.equals(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 }
 

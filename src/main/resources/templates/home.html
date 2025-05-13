@@ -35,12 +35,22 @@
                         <label for="parkingDropdown" class="form-label">Select Parking Station:</label>
                         <select id="parkingDropdown" class="form-select mb-3">
                             <option value="">Select a station</option>
-                            <option th:each="name : ${stationNames}" th:value="${name}" th:text="${name}"></option>
+                            <option th:each="station : ${allStations}" th:value="${station.getName()}" th:text="${station.getName()}"></option>
                         </select>
 
                         <p id="loading" style="display:none;">Loading...</p>
                         <div id="stationInfo" class="mt-3"></div>
                     </div>
+                    <form th:action="@{/home}" method="post">
+                        <label>
+                            Select the day for a prediction:
+                        </label>
+                        <br>
+                        <input type="date" onfocus="this.showPicker()" name="date">
+                        <button  type="submit" class="predict">
+                            Predict
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -97,10 +107,8 @@
                             <div class="card mt-3">
                                 <div class="card-body">
                                     <h5 class="card-title">${data.name}</h5>
-                                    <p class="card-text"><strong>Code:</strong> ${data.code}</p>
                                     <p class="card-text"><strong>Municipality:</strong> ${data.municipality}</p>
                                     <p class="card-text"><strong>Capacity:</strong> ${data.capacity}</p>
-                                    <p class="card-text"><strong>Period:</strong> ${data.period} minutes</p>
                                     <p class="card-text"><strong>Coordinates:</strong> (${data.coordinates.y}, ${data.coordinates.x})</p>
                                     <p class="card-text"><strong>Most Recent Free Spots:</strong> ${firstValue}</p>
                                     <p class="card-text"><strong>Most Recent Timestamp:</strong> ${firstTimestamp}</p>

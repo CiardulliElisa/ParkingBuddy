@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public interface Model {
 
-	/*public void modelData();*/
+	//public void modelData();
 
 	// Returns the predictions for that date
 	// @params date - the date for which to get the predictions
