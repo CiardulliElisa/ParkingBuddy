@@ -1,5 +1,7 @@
 package ParkingBuddy.dataStorage;
 
+import ParkingBuddy.dataGetter.OpenData;
+
 public interface ReadData {
-    public Object[] readData(String filepath);
+    public OpenData readData(String filepath);
 }
