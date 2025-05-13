@@ -50,3 +50,17 @@ header h1 {
         flex: 1 1 100%;
     }
 }
+
+button{
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#map {
+    height: 92%;
+    width: 100%;
+}

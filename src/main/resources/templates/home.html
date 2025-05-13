@@ -28,6 +28,16 @@
                 <option value="">Select a station</option>
                 <option th:each="name : ${stationNames}" th:value="${name}" th:text="${name}"></option>
             </select>
+
+            <form th:action="@{/home}" method="post">
+                <label>Select the day for a prediction: </label>
+                <br>
+                <input type="date" onfocus="this.showPicker()" name="date">
+                <button  type="submit" class="predict">Predict</button>
+            </form>
+            </div>
+        <div>
+
         </div>
         <p id="loading" style="display:none;">Loading...</p>
         <div id="stationInfo" class="mt-3"></div>

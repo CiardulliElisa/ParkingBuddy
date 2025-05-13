@@ -24,11 +24,11 @@ public class ParkingStationModel implements Model {
 
 
 	 public ParkingStation hourAverage(ParkingStation aLotOfTimestamps){
-		 Map<LocalDateTime, Integer> newMap = new HashMap<>();
-		 Map<LocalDateTime, Integer> givenMap = aLotOfTimestamps.getTimestampValueMap();
-		 List<Map.Entry<LocalDateTime, Integer>> list = new ArrayList<>(givenMap.entrySet());
-		 list.sort(Map.Entry.comparingByKey());
-		 LocalDateTime key = list.getFirst().getKey();
+//		 Map<LocalDateTime, Integer> newMap = new HashMap<>();
+//		 Map<LocalDateTime, Integer> givenMap = aLotOfTimestamps.getTimestampValueMap();
+//		 List<Map.Entry<LocalDateTime, Integer>> list = new ArrayList<>(givenMap.entrySet());
+//		 list.sort(Map.Entry.comparingByKey());
+//		 LocalDateTime key = list.getFirst().getKey();
 //		 for(LocalDateTime one : list){
 //
 //			 while(givenMap.get(givenMap.keySet().iterator().next())){}
@@ -67,11 +67,11 @@ public class ParkingStationModel implements Model {
 	 }
 
 	 public static void main(String [] args) throws IOException {
-		 ParkingData data= new ParkingData();
-		 LocalDateTime start = LocalDateTime.of(2024, 4, 29, 10, 0);
-		 LocalDateTime end = LocalDateTime.of(2025, 4, 30, 23, 0);
-		 int code = 103;
-		 ParkingStation station = data.getData(start, end, code);
+//		 ParkingData data= new ParkingData();
+//		 LocalDateTime start = LocalDateTime.of(2024, 4, 29, 10, 0);
+//		 LocalDateTime end = LocalDateTime.of(2025, 4, 30, 23, 0);
+//		 int code = 103;
+//		 ParkingStation station = data.getData(start, end, code);
 
 	 }
 
