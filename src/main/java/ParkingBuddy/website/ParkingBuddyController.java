@@ -1,5 +1,7 @@
 package ParkingBuddy.website;
 /*import ParkingBuddy.chartPoint.ChartService;*/
+import ParkingBuddy.chartPoint.ChartService;
+import ParkingBuddy.chartPoint.DataPoint;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 
@@ -20,13 +22,20 @@ import java.util.List;
 
 @Controller
 public class ParkingBuddyController{
-    //private final ChartService chartService = new ChartService();
+    private final ChartService chartService = new ChartService();
+    private final Set<String> stationNames = ParkingData.findAll();
 
 	@GetMapping("/")
     public String home(Model model) {
-        Set<String> stationNames = ParkingData.findAll();
+//        Set<String> stationNames = ParkingData.findAll();
         model.addAttribute("stationNames", stationNames);
         return "home"; // Opens home.html
+    }
+
+    @PostMapping("/home")
+    public String greetingSubmit(@RequestParam String date, Model model) {
+        model.addAttribute("stationNames", stationNames);
+        return "redirect:/chart";
     }
 
     @GetMapping("/api/stationData")
@@ -78,12 +87,13 @@ public class ParkingBuddyController{
 //        return "redirect:/chart"; //opens home.html
 //    }
 //
-//    @GetMapping("/chart")
-//    public String getChart(Model model) throws IOException {
-//        List<DataPoint> dataPoints = chartService.getDataPoints();
-//        model.addAttribute("dataPoints", dataPoints);
-//        return "chart";
-//    }
+    @GetMapping("/chart")
+    public String getChart(Model model) throws IOException {
+        List<DataPoint> dataPoints = chartService.getDataPoints();
+        model.addAttribute("dataPoints", dataPoints);
+        model.addAttribute("stationNames", stationNames);
+        return "chart";
+    }
 //}
 
 
