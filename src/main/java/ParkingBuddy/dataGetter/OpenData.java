@@ -1,5 +1,5 @@
 package ParkingBuddy.dataGetter;
 
-public abstract class OpenData {
+public class OpenData {
 
 }

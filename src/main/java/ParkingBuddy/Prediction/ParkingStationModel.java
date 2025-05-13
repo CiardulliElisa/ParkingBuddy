@@ -33,7 +33,6 @@ public class ParkingStationModel implements Model {
 //		 list.sort(Map.Entry.comparingByKey());
 //		 LocalDateTime key = list.getFirst().getKey();
 //		 for(LocalDateTime one : list){
-//
 //			 while(givenMap.get(givenMap.keySet().iterator().next())){}
 //		 }
 

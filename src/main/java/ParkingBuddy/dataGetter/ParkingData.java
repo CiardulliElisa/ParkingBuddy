@@ -35,14 +35,14 @@ public class ParkingData extends GetData {
             int responseCode = connection.getResponseCode();
 
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    System.out.println("responseCode == HttpURLConnection.HTTP_OK");
+                    // System.out.println("responseCode == HttpURLConnection.HTTP_OK");
                     Scanner scanner = new Scanner(connection.getInputStream());
                     StringBuilder response = new StringBuilder();
                     while (scanner.hasNextLine()) {
                         response.append(scanner.nextLine());
                 }
                 scanner.close();
-                System.out.println(response);
+                // System.out.println(response);
                 return parseParkingStationData(response.toString());
 
             } else {
@@ -98,7 +98,7 @@ public class ParkingData extends GetData {
             free_spots.add(value);
         }
         ParkingStation p1 = new ParkingStation(name, code, period, municipality, capacity, coordinates, timestamps, free_spots);
-        System.out.println(p1);
+        // System.out.println(p1);
         return p1;
     }
 

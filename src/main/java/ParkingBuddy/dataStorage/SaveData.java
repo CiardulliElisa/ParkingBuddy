@@ -1,5 +1,9 @@
 package ParkingBuddy.dataStorage;
 
+import ParkingBuddy.dataGetter.OpenData;
+
+import java.io.IOException;
+
 public interface SaveData {
-    public boolean saveData(Object[] data, String filepath);
+    boolean saveData(OpenData data, String filepath) throws IOException;
 }

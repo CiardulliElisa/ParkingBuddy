@@ -1,127 +1,111 @@
 package ParkingBuddy.dataStorage;
 
-import ParkingBuddy.dataGetter.DataType;
 import ParkingBuddy.dataGetter.OpenData;
+import ParkingBuddy.dataGetter.ParkingData;
+import ParkingBuddy.dataGetter.ParkingStation;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.time.LocalDateTime;
 
 public class CSVFile implements ReadData, SaveData{
-    private static Map<String, OpenData> dataMap = new HashMap<>();
 
     @Override
-    public Object[] readData(String filepath) {
-        return new Object[0];
+    public OpenData readData(String filepath) {
+        return null;
     }
 
-//    public static void main(String[] args) {
-//        CSVFile csvFile = new CSVFile();
-//        String filepath = "./data";
-//
-//        csvFile.saveData(null, filepath);
-//    }
-    public static void main(String[] args) {}
+    public static void main(String[] args) throws IOException {
+
+        // get data to store
+        LocalDateTime date =LocalDateTime.now().minusDays(10);
+        LocalDateTime date2 = LocalDateTime.now();
+        ParkingStation save = ParkingData.getData(date, date2, "Piazza Walther");
+
+        //test method to generate file path
+        System.out.println(genFilePathPS(save));
+
+        //save the data into the specified filepath
+        CSVFile csvFile = new CSVFile();
+        String filepath = "./historicalData/test1.csv";
+        csvFile.saveData(save, filepath);
+    }
+
+    /*method to generate a uniform name for the files, in which historical parking data is stored
+    * input: Parking station to save
+    * Output: String, in which the parking station should be stored
+    * */
+
+    //NOTE: this method does not have to stay here. Can be written in the method,
+    //which is responsible to read and write data (e.g Prediction, automated data request)
+    public static String genFilePathPS(ParkingStation station){
+        String folder = "./historicalData/";
+        return folder + station.getName() + ".csv";
+    }
 
     @Override
-    public boolean saveData(Object[] data, String filepath) {
+    /*Stores data into a specified filepath in csv format
+    * Input: subclass object of the OpenData class, path of the csv file
+    * Output: true, iff the storage was successful
+    * */
+    public boolean saveData(OpenData data, String filepath) throws IOException {
+        if(data == null){
+            return false;
+        }
 
-        loadDataClasses();
-        String dataType = data[0].getClass().getDeclaredAnnotation(DataType.class).name();
-        OpenData clazz = dataMap.get(dataType);
-
-        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        //create the line of headers for the file
         String[] headers = new String[data.getClass().getDeclaredFields().length];
-
         for(int a = 0; a < headers.length; a++){
             headers[a] = data.getClass().getDeclaredFields()[a].getName();
         }
 
-        File myCsv = new File (filepath.toString());
-
-
-        try(Writer writer = new FileWriter("C:/Users/184826/eclipse-workspace_2/Joel/parkingLotData.csv");
+        //create the file, if it is missing
+        File myCsv = new File (filepath);
+        try(Writer writer = new FileWriter(myCsv.getAbsolutePath());
+            //writes the headers to the file
             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(headers))
         ) {
 
-            for(Object one : data){
-                Object [] values = new Object[headers.length];
-                for(int a = 0; a < headers.length; a++){
-                    Field field = clazz.getClass().getDeclaredField(headers[a]);
-                    values[a] = field.get(clazz);
-                }
-                csvPrinter.printRecord(values);
-
+            //get the attribute values of the object by name and write their content into the file
+            Object [] values = new Object[headers.length];
+            for(int a = 0; a < headers.length; a++) {
+                Field field = data.getClass().getDeclaredField(headers[a]);
+                field.setAccessible(true);
+                //calls help method to format the attributes as sense full strings
+                values[a] = formatValue(field.get(data));
             }
-//            for(ParkingStation one : PiazzaWalther.data) {
-//                csvPrinter.printRecord(one._timestamp, one.mperiod, one.mvalue);
-//            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+
+            csvPrinter.printRecord(values);
+
+        } catch (IOException | NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return false;
+        return true;
     }
 
-    private void loadDataClasses() {
-        Iterator<OpenData> dataTypes = ServiceLoader.
-                load(OpenData.class).iterator();
-        while(dataTypes.hasNext()) {
-            OpenData dataClass = dataTypes.next();
-            DataType data = dataClass.getClass().getAnnotation(DataType.class);
-            dataMap.put(data.name(), dataClass);
+
+    //help method to format the input value to a proper string
+    private String formatValue(Object value) {
+        if (value instanceof Point point) {
+            return point.getX() + "," + point.getY();
+        } else if (value != null) {
+            return value.toString();
+        } else {
+            return "";
         }
     }
 
+
+    //alte methode zum lesen von datenfile
     /*
-    * public static void saveData(String jsonData) {
-
-    	ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    	Response PiazzaWalther = null;
-
-    	try {
-
-    	    PiazzaWalther = objectMapper.readValue(jsonData, Response.class);
-
-
-    	} catch (IOException e) {
-    	    e.printStackTrace();
-    	}
-
-    	File myCsv = new File ("./parkingLotData.csv");
-    	Object[] collection = new Object[1];
-
-		String[] headers = new String[] {"timestamp", "mperiod", "mvalue" };
-
-		try(Writer writer = new FileWriter("C:/Users/184826/eclipse-workspace_2/Joel/parkingLotData.csv");
-				CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(headers))
-						) {
-
-			for(ParkingStation one : PiazzaWalther.data) {
-				csvPrinter.printRecord(one._timestamp, one.mperiod, one.mvalue);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-
-    }
-
 
     private static int getPrediction(String data, String dayOfWeek, String startingHour, String endingHour) {
 //    	int day = LocalDate.now().getDayOfWeek().toString().compareTo(dayOfWeek);

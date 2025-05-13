@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 
-@DataType(name = "ParkingStation")
 public class ParkingStation extends OpenData{
 
     private String municipality;
@@ -18,6 +17,10 @@ public class ParkingStation extends OpenData{
 
     private ArrayList<LocalDateTime> timestamps;
     private ArrayList<Integer> free_spots;
+
+    public ParkingStation() {
+        super();
+    }
 
     // Constructor
     public ParkingStation(String name, int code, int period, String municipality, int capacity, Point coordinates, ArrayList<LocalDateTime> timestamps, ArrayList<Integer> free_spots) {
