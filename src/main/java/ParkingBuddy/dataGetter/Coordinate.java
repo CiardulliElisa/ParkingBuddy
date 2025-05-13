@@ -25,4 +25,13 @@ public class Coordinate {
     public void setLng(double lng) {
         this.lng = lng;
     }
+
+    @Override
+    public String toString() {
+        return "Coordinate{" +
+                "lat=" + lat +
+                ", lng=" + lng +
+                '}';
+    }
+
 }

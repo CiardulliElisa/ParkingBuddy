@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.stream.StreamSupport;
 
 public class CSVFile implements ReadData, SaveData{
 
@@ -28,7 +29,7 @@ public class CSVFile implements ReadData, SaveData{
         // get data to store
         LocalDateTime date =LocalDateTime.now().minusDays(10);
         LocalDateTime date2 = LocalDateTime.now();
-        ParkingStation save = ParkingData.getData(date, date2, "Piazza Walther");
+        ParkingStation save = ParkingData.getData(date, date2, "P03 - Piazza Walther");
 
         //test method to generate file path
         System.out.println(genFilePathPS(save));
@@ -94,7 +95,12 @@ public class CSVFile implements ReadData, SaveData{
 
     //help method to format the input value to a proper string
     private String formatValue(Object value) {
-        if (value instanceof Point point) {
+        if (value instanceof Iterable<?> iterable) {
+            return String.join(";",
+                    StreamSupport.stream(iterable.spliterator(), false)
+                            .map(Object::toString)
+                            .toArray(String[]::new));
+        } else if (value instanceof Point point) {
             return point.getX() + "," + point.getY();
         } else if (value != null) {
             return value.toString();

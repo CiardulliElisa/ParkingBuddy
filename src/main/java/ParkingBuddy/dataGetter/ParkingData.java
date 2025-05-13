@@ -24,7 +24,6 @@ public class ParkingData extends GetData {
     // @param startTime and endTime - start and end of the interval of time we are interested in
     // @param code - the code of the parking lot we are interested in
     public static ParkingStation getData(LocalDateTime now, LocalDateTime aYearAgo, String name) throws IOException {
-
         String accessToken = generateAccessToken();
 
         try {
