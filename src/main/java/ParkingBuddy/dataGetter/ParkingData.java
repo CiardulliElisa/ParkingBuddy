@@ -2,11 +2,8 @@ package ParkingBuddy.dataGetter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tomcat.util.json.JSONFilter;
 
-import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -14,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 public class ParkingData extends GetData {
 
@@ -23,7 +18,7 @@ public class ParkingData extends GetData {
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in
     // @param code - the code of the parking lot we are interested in
-    public static ParkingStation getData(LocalDateTime now, LocalDateTime aYearAgo, String name) throws IOException {
+    public static ParkingStation getHistoricalData(LocalDateTime now, LocalDateTime aYearAgo, String name) throws IOException {
         String accessToken = generateAccessToken();
 
         try {

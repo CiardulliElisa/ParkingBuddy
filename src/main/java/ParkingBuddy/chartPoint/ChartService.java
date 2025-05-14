@@ -16,7 +16,7 @@ public class ChartService {
 //        LocalDateTime start = LocalDateTime.of(2025, 4, 29, 10, 0);
 //        LocalDateTime end = LocalDateTime.of(2025, 4, 30, 23, 0);
 //        int code = 103;
-//        ParkingStation station = data.getData(start, end, code);
+//        ParkingStation station = data.getHistoricalData(start, end, code);
 //        Map<LocalDateTime, Integer> map = station.getTimestampValueMap();
 //
 //        List<DataPoint> dataPoints = new ArrayList<DataPoint>();

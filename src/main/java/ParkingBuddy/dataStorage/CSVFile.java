@@ -3,8 +3,6 @@ package ParkingBuddy.dataStorage;
 import ParkingBuddy.dataGetter.OpenData;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -29,7 +27,7 @@ public class CSVFile implements ReadData, SaveData{
         // get data to store
         LocalDateTime date =LocalDateTime.now().minusDays(10);
         LocalDateTime date2 = LocalDateTime.now();
-        ParkingStation save = ParkingData.getData(date, date2, "P03 - Piazza Walther");
+        ParkingStation save = ParkingData.getHistoricalData(date, date2, "P03 - Piazza Walther");
 
         //test method to generate file path
         System.out.println(genFilePathPS(save));
