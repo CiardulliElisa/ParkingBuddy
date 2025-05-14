@@ -109,7 +109,6 @@ public class ParkingData extends GetData {
 
         // if there is no name, then the data for all stations should be fetched
         if(nameInput == null) {
-            System.out.println("all stations");
             url += "&select=scoordinate,sname";
         }
         // if a name is given fetch the latest data for that station
@@ -178,10 +177,4 @@ public class ParkingData extends GetData {
 
         return stations;
 }
-
-    public static void main(String[] args) {
-        //ParkingData.findLatestData(null);
-        ParkingData.findLatestData("Park Plaza");
-
-    }
 }
