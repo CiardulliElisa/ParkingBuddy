@@ -1,14 +1,9 @@
 package ParkingBuddy.website;
-/*import ParkingBuddy.chartPoint.ChartService;*/
-import ParkingBuddy.chartPoint.ChartService;
-import ParkingBuddy.chartPoint.DataPoint;
-import ParkingBuddy.dataGetter.Coordinate;
-import ParkingBuddy.dataGetter.ParkingData;
-import ParkingBuddy.dataGetter.ParkingStation;
-
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
+/*import ParkingBuddy.chartPoint.ChartService;*/
+import ParkingBuddy.chartPoint.ChartService;
+import ParkingBuddy.chartPoint.DataPoint;
+import ParkingBuddy.dataGetter.Coordinate;
+import ParkingBuddy.dataGetter.ParkingData;
+import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
@@ -46,11 +46,12 @@ public class ParkingBuddyController{
     //will be removed
     @GetMapping("/api/points")
     @ResponseBody
-    public List<Coordinate> getPoints() {
-        return List.of(
-                new Coordinate(46.638780, 11.350111),
-                new Coordinate( 34.0522, -118.2437)
-        );
+    public Map<String, Coordinate> getPoints() {    	
+    	return allStations.stream()
+    		    .collect(Collectors.toMap(
+    		        ParkingStation::getName,
+    		        ParkingStation::getCoordinates
+    		    ));
     }
 
 

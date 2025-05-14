@@ -67,11 +67,13 @@
         fetch('/api/points')
             .then(response => response.json())
             .then(data => {
-                data.forEach(point => {
-                    L.marker([point.lat, point.lng])
-                        .addTo(map)
-                        .bindPopup(point.name);
-                });
+                Object.entries(data).forEach(([name, point]) => {
+                    if (point.lat && point.lng) {
+                        L.marker([point.lat, point.lng])
+                            .addTo(map)
+                            .bindPopup(name || 'Unnamed Station');
+                    }
+                 });
             })
             .catch(error => console.error('Error loading markers:', error));
     </script>
