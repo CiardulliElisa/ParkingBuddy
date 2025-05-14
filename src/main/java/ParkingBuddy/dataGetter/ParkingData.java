@@ -14,7 +14,6 @@ import java.util.*;
 
 public class ParkingData extends GetData {
 
-
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in
     // @param code - the code of the parking lot we are interested in
@@ -22,7 +21,7 @@ public class ParkingData extends GetData {
         String accessToken = generateAccessToken();
 
         try {
-            URL apiUrl = new URL(generateURL(now, aYearAgo, name));
+            URL apiUrl = new URL(generateHistoricalURL(now, aYearAgo, name));
             HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
@@ -94,7 +93,7 @@ public class ParkingData extends GetData {
         return date.format(formatter);
     }
 
-    private static String generateURL(LocalDateTime startDate, LocalDateTime endDate, String name) throws UnsupportedEncodingException {
+    private static String generateHistoricalURL(LocalDateTime startDate, LocalDateTime endDate, String name) throws UnsupportedEncodingException {
         name = URLEncoder.encode(name, StandardCharsets.UTF_8);
         return "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/" +
                 formatDate(startDate) + "/"+
@@ -104,19 +103,11 @@ public class ParkingData extends GetData {
                 "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
     };
 
-    public static Set<ParkingStation> findLatestData(String nameInput) {
-        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest?limit=-1&offset=0&shownull=false&distinct=true&where=tname.eq.free";
-
-        // if there is no name, then the data for all stations should be fetched
-        if(nameInput == null) {
-            url += "&select=scoordinate,sname";
-        }
-        // if a name is given fetch the latest data for that station
-        else {
-            nameInput = URLEncoder.encode(nameInput, StandardCharsets.UTF_8);
-            System.out.println("Station: " + nameInput);
-            url += "&where=sname.eq." + nameInput + "&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
-        }
+    public static Set<ParkingStation> findAllLatestData() {
+        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
+                + "?limit=-1&offset=0&shownull=false&distinct=true"
+                + "&where=tname.eq.free"
+                + "&select=scoordinate,sname";
 
         Set<ParkingStation> stations = new HashSet<>();
 
@@ -133,48 +124,68 @@ public class ParkingData extends GetData {
                 double y = coordNode.path("y").asDouble();
                 Coordinate coordinates = new Coordinate(x, y);
 
-                // If name is null -> minimal data
-                if (nameInput == null) {
-                    ParkingStation station = new ParkingStation(name, "", 0, coordinates, new ArrayList<>(), new ArrayList<>());
-                    stations.add(station);
-                } else {
-                    // Full data parsing
-                    int capacity = entry.path("smetadata.capacity").asInt();
-                    String municipality = entry.path("smetadata.municipality").asText("");
-
-                    ArrayList<LocalDateTime> timestamps = new ArrayList<>();
-                    ArrayList<Integer> free_spots = new ArrayList<>();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
-
-                    // Iterate over all elements in the rootNode array
-                    for (JsonNode node : dataArray) {
-                        String timestampStr = node.get("_timestamp").asText();
-                        if (timestampStr == null || timestampStr.isEmpty()) {
-                            continue;
-                        }
-                        LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
-                        int value = node.get("mvalue").asInt();
-
-                        timestamps.add(timestamp);
-                        free_spots.add(value);
-                    }
-
-                    // Build ParkingStation once per station name (grouped data)
-                    ParkingStation station = new ParkingStation(
-                        name,
-                        municipality,
-                        capacity,
-                        coordinates,
-                        timestamps,
-                        free_spots
-                        );
-                        stations.add(station);
-                }
+                ParkingStation station = new ParkingStation(name, "", 0, coordinates, new ArrayList<>(), new ArrayList<>());
+                stations.add(station);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return stations;
-}
+    }
+
+    public static Set<ParkingStation> findLatestData(String nameInput) {
+        if (nameInput == null) {
+            throw new IllegalArgumentException("Station name must not be null.");
+        }
+
+        String encodedName = URLEncoder.encode(nameInput, StandardCharsets.UTF_8);
+
+        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
+                + "?limit=-1&offset=0&shownull=false&distinct=true"
+                + "&where=tname.eq.free"
+                + "&where=sname.eq." + encodedName
+                + "&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
+
+        Set<ParkingStation> stations = new HashSet<>();
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(new URL(url));
+            JsonNode dataArray = root.path("data");
+
+            if (!dataArray.isEmpty()) {
+                String name = dataArray.get(0).path("sname").asText(null);
+                JsonNode coordNode = dataArray.get(0).path("scoordinate");
+                double x = coordNode.path("x").asDouble();
+                double y = coordNode.path("y").asDouble();
+                Coordinate coordinates = new Coordinate(x, y);
+
+                int capacity = dataArray.get(0).path("smetadata.capacity").asInt();
+                String municipality = dataArray.get(0).path("smetadata.municipality").asText("");
+
+                ArrayList<LocalDateTime> timestamps = new ArrayList<>();
+                ArrayList<Integer> free_spots = new ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
+
+                for (JsonNode node : dataArray) {
+                    String timestampStr = node.get("_timestamp").asText("");
+                    if (!timestampStr.isEmpty()) {
+                        LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
+                        int value = node.get("mvalue").asInt();
+
+                        timestamps.add(timestamp);
+                        free_spots.add(value);
+                    }
+                }
+
+                ParkingStation station = new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
+                stations.add(station);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stations;
+    }
 }

@@ -22,7 +22,7 @@ import ParkingBuddy.dataGetter.ParkingStation;
 @Controller
 public class ParkingBuddyController{
     private final ChartService chartService = new ChartService();
-    private final Set<ParkingStation> allStations = ParkingData.findLatestData(null);
+    private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
 
 	@GetMapping("/")
     public String home(Model model) {
