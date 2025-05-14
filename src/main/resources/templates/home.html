@@ -77,56 +77,81 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-        const dropdown = document.getElementById('parkingDropdown');
-        const infoDiv = document.getElementById('stationInfo');
-        const loading = document.getElementById('loading');
+            const dropdown = document.getElementById('parkingDropdown');
+            const infoDiv = document.getElementById('stationInfo');
+            const loading = document.getElementById('loading');
 
-        dropdown.addEventListener('change', function () {
-            const selectedName = this.value;
+            dropdown.addEventListener('change', function () {
+                const selectedName = this.value;
 
-            if (!selectedName) return;
+                if (!selectedName) return;
 
-            loading.style.display = 'block';
-            infoDiv.innerHTML = '';
+                loading.style.display = 'block';
+                infoDiv.innerHTML = '';
 
-            fetch(`/api/stationData?name=${encodeURIComponent(selectedName)}`)
-                .then(response => response.json())
-                .then(data => {
-                    loading.style.display = 'none';
+                fetch(`/api/stationData?name=${encodeURIComponent(selectedName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        loading.style.display = 'none';
 
-                    if (data) {
-                        console.log(data)
-                        console.log("Timestamps:", data.timestamps);
-                        console.log("Free spots:", data.free_spots);
-                        const firstTimestamp = data.timestamps[0]; // The most recent timestamp
-                        const firstValue = data.free_spots[0];  // Value for the most recent timestamp
+                        if (data) {
+                            console.log(data)
+                            console.log("Timestamps:", data.timestamps);
+                            console.log("Free spots:", data.free_spots);
+                            const firstTimestamp = data.timestamps[0];
+                            const firstValue = data.free_spots[0];
 
+                            const timestampDate = new Date(firstTimestamp);
+                            const now = new Date();
+                            const diffMs = now - timestampDate; // Difference in milliseconds
 
-                        // Update UI
-                        infoDiv.innerHTML = `
-                            <div class="card mt-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">${data.name}</h5>
-                                    <p class="card-text"><strong>Municipality:</strong> ${data.municipality}</p>
-                                    <p class="card-text"><strong>Capacity:</strong> ${data.capacity}</p>
-                                    <p class="card-text"><strong>Coordinates:</strong> (${data.coordinates.y}, ${data.coordinates.x})</p>
-                                    <p class="card-text"><strong>Most Recent Free Spots:</strong> ${firstValue}</p>
-                                    <p class="card-text"><strong>Most Recent Timestamp:</strong> ${firstTimestamp}</p>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        infoDiv.innerHTML = `<p>No data available for this station.</p>`;
-                    }
-                })
-                .catch(error => {
-                    loading.style.display = 'none';
-                    infoDiv.innerHTML = `<p>Error loading station data.</p>`;
-                    console.error(error);
-                });
+                            // Convert to human-readable time ago
+                            let timeAgo;
+                            const diffSec = Math.floor(diffMs / 1000);
+                            const diffMin = Math.floor(diffSec / 60);
+                            const diffHours = Math.floor(diffMin / 60);
+                            const diffDays = Math.floor(diffHours / 24);
+
+                            let infoHTML = `
+                                <div class="card mt-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${data.name}</h5>
+                                        <p class="card-text"><strong>Municipality:</strong> ${data.municipality}</p>
+                                        <p class="card-text"><strong>Capacity:</strong> ${data.capacity}</p>
+                            `;
+
+                            if (diffHours > 10) {
+                                // No real-time data available, hide the timestamp and free spots line
+                                infoHTML += `<p class="card-text" style="color: red;">No real-time data available for this station.</p>`;
+                            } else {
+                                // Display the "Most Recent Free Spots" and "Last Updated" info
+                                infoHTML += `<p class="card-text"><strong>Most Recent Free Spots:</strong> ${firstValue}</p>`;
+
+                                if (diffDays > 0) {
+                                    timeAgo = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                                } else if (diffHours > 0) {
+                                    timeAgo = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                                } else if (diffMin > 0) {
+                                    timeAgo = `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+                                } else {
+                                    timeAgo = `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
+                                }
+
+                                infoHTML += `<p class="card-text"><strong>Last Updated:</strong> ${timeAgo}</p>`;
+                            }
+
+                            infoHTML += `</div></div>`;
+
+                            infoDiv.innerHTML = infoHTML; // This should be inside the .then block
+                        }
+                    })
+                    .catch(error => {
+                        loading.style.display = 'none';
+                        infoDiv.innerHTML = `<p>Error loading station data.</p>`;
+                        console.error(error);
+                    });
+            });
         });
-    });
-
     </script>
 </body>
 </html>
