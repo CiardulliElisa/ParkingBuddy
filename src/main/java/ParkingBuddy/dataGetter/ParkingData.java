@@ -61,9 +61,6 @@ public class ParkingData extends GetData {
         JsonNode firstElement = dataArray.get(0);
 
         String name = firstElement.get("sname").asText();
-
-        int period = firstElement.get("mperiod").asInt();
-        int code = firstElement.get("scode").asInt();
         String municipality = firstElement.get("smetadata.municipality").asText();
         int capacity = firstElement.get("smetadata.capacity").asInt();
 
@@ -89,7 +86,7 @@ public class ParkingData extends GetData {
             timestamps.add(timestamp);
             free_spots.add(value);
         }
-        return new ParkingStation(name, code, period, municipality, capacity, coordinates, timestamps, free_spots);
+        return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
     }
 
     private static String formatDate(LocalDateTime date) {
@@ -104,7 +101,7 @@ public class ParkingData extends GetData {
                 formatDate(endDate) +
                 "?limit=-1&offset=0&where=sname.eq.%22" +
                 name +
-                "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC&select=mvalue,mvalidtime,mperiod,scode,tname,scoordinate,smetadata.capacity,sname,smetadata.municipality";
+                "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
     };
 
     public static Set<ParkingStation> findLatestData(String nameInput) {
@@ -119,7 +116,7 @@ public class ParkingData extends GetData {
         else {
             nameInput = URLEncoder.encode(nameInput, StandardCharsets.UTF_8);
             System.out.println("Station: " + nameInput);
-            url += "&where=sname.eq." + nameInput + "&select=mvalue,mvalidtime,mperiod,scode,tname,scoordinate,smetadata.capacity,sname,smetadata.municipality";
+            url += "&where=sname.eq." + nameInput + "&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
         }
 
         Set<ParkingStation> stations = new HashSet<>();
@@ -139,12 +136,10 @@ public class ParkingData extends GetData {
 
                 // If name is null -> minimal data
                 if (nameInput == null) {
-                    ParkingStation station = new ParkingStation(name, 0, 0, "", 0, coordinates, new ArrayList<>(), new ArrayList<>());
+                    ParkingStation station = new ParkingStation(name, "", 0, coordinates, new ArrayList<>(), new ArrayList<>());
                     stations.add(station);
                 } else {
                     // Full data parsing
-                    int code = entry.path("scode").asInt();
-                    int period = entry.path("mperiod").asInt();
                     int capacity = entry.path("smetadata.capacity").asInt();
                     String municipality = entry.path("smetadata.municipality").asText("");
 
@@ -168,8 +163,6 @@ public class ParkingData extends GetData {
                     // Build ParkingStation once per station name (grouped data)
                     ParkingStation station = new ParkingStation(
                         name,
-                        code,
-                        period,
                         municipality,
                         capacity,
                         coordinates,

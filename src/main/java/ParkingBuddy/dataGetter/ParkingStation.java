@@ -9,9 +9,7 @@ public class ParkingStation extends OpenData{
     private String municipality;
     private Coordinate coordinates;
     private int capacity;
-    private int code;
     private String name;
-    private int period;
 
     private ArrayList<LocalDateTime> timestamps;
     private ArrayList<Integer> free_spots;
@@ -21,11 +19,9 @@ public class ParkingStation extends OpenData{
     }
 
     // Constructor
-    public ParkingStation(String name, int code, int period, String municipality, int capacity, Coordinate coordinates, ArrayList<LocalDateTime> timestamps, ArrayList<Integer> free_spots) {
-        this.code = code;
+    public ParkingStation(String name, String municipality, int capacity, Coordinate coordinates, ArrayList<LocalDateTime> timestamps, ArrayList<Integer> free_spots) {
         this.name = name;
         this.coordinates = coordinates;
-        this.period = period;
         this.timestamps = timestamps;
         this.free_spots = free_spots;
         this.capacity = capacity;
@@ -73,18 +69,6 @@ public class ParkingStation extends OpenData{
         this.capacity = capacity;
     }
 
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public int geCode() {
-        return code;
-    }
-
     public String getName() {
         return name;
     }
@@ -93,20 +77,10 @@ public class ParkingStation extends OpenData{
         this.name = name;
     }
 
-    public int getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(int period) {
-        this.period = period;
-    }
-
     @Override
     public String toString() {
         return "ParkingStationData{" +
-                "code='" + code + '\'' +
                 ", name='" + name + '\'' +
-                ", period=" + period +
                 ", period=" + municipality +
                 ", period=" + capacity +
                 ", coordinates='" + coordinates + '\'' +
