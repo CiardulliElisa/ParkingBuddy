@@ -1,6 +1,8 @@
+let map;
+
 // Initialize the map with a center and zoom level
 function initializeMap() {
-    const map = L.map('map').setView([46.638780, 11.350111], 9);
+    map = L.map('map').setView([46.638780, 11.350111], 9);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
@@ -9,14 +11,23 @@ function initializeMap() {
     loadMarkers(map);
 }
 
+// Zooms to a parking station when selected
+function changeMap(lat, lng) {
+    if (map && typeof map.flyTo === 'function') {
+        map.flyTo([lat, lng], 17, {
+            animate: true,
+            duration: 2
+        });
+    }
+}
+
 // Load markers on the map from the /api/points endpoint
 function loadMarkers(map) {
     fetch('/api/points')
         .then(response => response.json())
         .then(data => {
-            console.log('Points data:', data);
             Object.entries(data).forEach(([name, point]) => {
-                if (point && point.lat && point.lng) {
+                if (point.lat && point.lng) {
                     createMarker(map, name, point);
                 }
             });
@@ -28,7 +39,10 @@ function loadMarkers(map) {
 function createMarker(map, name, point) {
     L.marker([point.lat, point.lng])
         .addTo(map)
-        .bindPopup(name || 'Unnamed Station');
+        .bindPopup(name || 'Unnamed Station')
+        .on('click', function () {
+            fetchAndDisplayStation(name);
+        });
 }
 
 // Handle station dropdown changes by adding event listener
@@ -145,4 +159,5 @@ function init() {
     handleDropdownChange();
 }
 
+// Wait for the DOM to be fully loaded before running the scripts
 document.addEventListener('DOMContentLoaded', init);
