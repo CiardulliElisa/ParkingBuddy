@@ -1,8 +1,11 @@
 package ParkingBuddy.website;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ParkingBuddy.chartPoint.DataPoint;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,11 +30,10 @@ public class ParkingBuddyController{
         return "home";
     }
 
-/*    @PostMapping("/home")
-    public String predictionSubmit(@RequestParam String date, Model model) {
-        model.addAttribute("stationNames", allStations);
+    @PostMapping("/home")
+    public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
         return "redirect:/chart";
-    }*/
+    }
 
     @GetMapping("/api/stationData")
     @ResponseBody
@@ -57,13 +59,13 @@ public class ParkingBuddyController{
 //        return "redirect:/chart"; //opens home.html
 //    }
 //
-/*    @GetMapping("/chart")
+    @GetMapping("/chart")
     public String getChart(Model model) throws IOException {
         List<DataPoint> dataPoints = chartService.getDataPoints();
         model.addAttribute("dataPoints", dataPoints);
         model.addAttribute("stationNames", allStations);
         return "chart";
-    }*/
+    }
 //}
 
 

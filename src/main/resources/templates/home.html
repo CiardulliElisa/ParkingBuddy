@@ -32,7 +32,8 @@
             <div class="col-md-6 mb-3">
                 <div class="card h-100 parkingStations">
                     <div class="card-body">
-                        <form action="/home" method="POST">
+
+                        <form th:action="@{/home}" method="POST">
                             <label for="parkingDropdown" class="form-label">Select Parking Station:</label>
                             <select id="parkingDropdown" name="station" class="form-select mb-3">
                                 <option value="">Select a station</option>
@@ -44,7 +45,7 @@
 
                             </br>
 
-                            <!-- Date Picker (initially hidden) -->
+                            <!-- Date Picker for prediction -->
                             <div id="datePickerContainer" class="mb-3" style="display: none;">
                                 <label for="reservationDate" class="form-label">Select Date:</label>
                                 <input type="date" id="reservationDate" name="date" class="form-control">
