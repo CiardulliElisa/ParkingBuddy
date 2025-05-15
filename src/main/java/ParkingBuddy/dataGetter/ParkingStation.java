@@ -80,9 +80,9 @@ public class ParkingStation extends OpenData{
     @Override
     public String toString() {
         return "ParkingStationData{" +
-                ", name='" + name + '\'' +
-                ", period=" + municipality +
-                ", period=" + capacity +
+                "name='" + name + '\'' +
+                ", municipality=" + municipality +
+                ", capacity=" + capacity +
                 ", coordinates='" + coordinates + '\'' +
                 ", timestamps=" + timestamps +
                 ", free_spots=" + free_spots +
