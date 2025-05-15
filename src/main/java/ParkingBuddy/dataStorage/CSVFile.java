@@ -1,41 +1,246 @@
 package ParkingBuddy.dataStorage;
 
-import ParkingBuddy.dataGetter.OpenData;
-import ParkingBuddy.dataGetter.ParkingData;
-import ParkingBuddy.dataGetter.ParkingStation;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
-import java.awt.*;
+import java.awt.Point;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.StreamSupport;
+
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import org.reflections.Reflections;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ParkingBuddy.dataGetter.Coordinate;
+import ParkingBuddy.dataGetter.OpenData;
+import ParkingBuddy.dataGetter.ParkingStation;
 
 public class CSVFile implements ReadData, SaveData{
 
-    @Override
-    public OpenData readData(String filepath) {
-        return null;
-    }
-
     public static void main(String[] args) throws IOException {
 
-        // get data to store
-        LocalDateTime date =LocalDateTime.now().minusDays(10);
-        LocalDateTime date2 = LocalDateTime.now();
-        ParkingStation save = ParkingData.getHistoricalData(date, date2, "P03 - Piazza Walther");
+//      // get data to store
+//      LocalDateTime date =LocalDateTime.now().minusDays(10);
+//      LocalDateTime date2 = LocalDateTime.now();
+//      ParkingStation save = ParkingData.getHistoricalData(date, date2, "P03 - Piazza Walther");
+//
+//      //test method to generate file path
+//      System.out.println(genFilePathPS(save));
+//
+//      //save the data into the specified filepath
+//      CSVFile csvFile = new CSVFile();
+//      String filepath = "./historicalData/test1.csv";
+//      csvFile.saveData(save, filepath);
+    	
+		try {
+			CSVFile reader = new CSVFile();
+	    	OpenData dataStation = reader.readData("./historicalData/Park Kellerei Algund.csv");
+	    	System.out.println("data Station class:" +dataStation.getClass());
+	    	System.out.println("data Station:" +dataStation);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+  }
+    
+    @Override
+    public OpenData readData(String filepath) {
+    	try (
+    			Reader reader = new FileReader(filepath);
+    			CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
+    			) {
+    		List<CSVRecord> records = parser.getRecords();
+    		if (records.isEmpty()) {
+    			throw new IllegalArgumentException("CSV file is empty.");
+    		}
+    		Class<? extends OpenData> clazz = findMatchingSubclass(parser.getHeaderMap().keySet());
 
-        //test method to generate file path
-        System.out.println(genFilePathPS(save));
+    		CSVRecord record = records.get(0);
+    		OpenData data = clazz.getDeclaredConstructor().newInstance();
 
-        //save the data into the specified filepath
-        CSVFile csvFile = new CSVFile();
-        String filepath = "./historicalData/test1.csv";
-        csvFile.saveData(save, filepath);
+    		for (String header : parser.getHeaderMap().keySet()) {
+    			Field field;
+    			try {
+    				field = clazz.getDeclaredField(header);
+    			} catch (NoSuchFieldException e) {
+    				field = clazz.getSuperclass().getDeclaredField(header);
+    			}
+
+    			field.setAccessible(true);
+    			String raw = record.get(header);
+    			Object value = parseValue2(field.getType(), raw, field);
+    			field.set(data, value);
+    		}
+
+    		// Handle Lists (timestamps, free_spots) if they are not in the first record
+    		// Read all records (assuming historical values for these fields)
+    		Field tsField = clazz.getDeclaredField("timestamps");
+    		Field freeField = clazz.getDeclaredField("free_spots");
+    		tsField.setAccessible(true);
+    		freeField.setAccessible(true);
+
+    		List<LocalDateTime> timestamps = new ArrayList<>();
+    		List<Integer> freeSpots = new ArrayList<>();
+    		DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    		for (CSVRecord rec : records) {
+    			String tsStr = rec.get("timestamps");
+    			if (tsStr != null && !tsStr.isEmpty()) {
+    				String[] tsStrItems = tsStr.split(";");
+    				for (String tsItem : tsStrItems) {
+    					timestamps.add(LocalDateTime.parse(tsItem.trim(), formatter));
+    				}
+    			}
+
+    			String freeStr = rec.get("free_spots");
+    			if (freeStr != null && !freeStr.isEmpty()) {
+    				String[] freeItems = freeStr.split(";");
+    				for (String freeItem : freeItems) {
+    					freeSpots.add(Integer.parseInt(freeItem.trim()));
+    				}
+    			}
+    		}
+
+    		tsField.set(data, timestamps);
+    		freeField.set(data, freeSpots);
+
+    		return data;
+
+    	} catch (Exception e) {
+    		throw new RuntimeException("Failed to read data from CSV", e);
+    	}
+    }
+
+
+    private static Object parseValue2(Class<?> type, String raw, Field field) throws Exception {
+    	if (raw == null || raw.isEmpty()) return null;
+
+    	if (type == String.class) return raw;
+    	if (type == int.class || type == Integer.class) return Integer.parseInt(raw);
+    	if (type == double.class || type == Double.class) return Double.parseDouble(raw);
+    	if (type == boolean.class || type == Boolean.class) return Boolean.parseBoolean(raw);
+    	if (type == Coordinate.class) {
+    		// e.g. Coordinate{lat=469, lng=1139}
+    		raw = raw.replaceAll("[^0-9,.-]", ""); // remove non-numeric stuff
+    		String[] parts = raw.split(",");
+    		double lat = Double.parseDouble(parts[0]);
+    		double lng = Double.parseDouble(parts[1]);
+    		return new Coordinate(lng, lat);
+    	}
+
+    	if (List.class.isAssignableFrom(type)) {
+    		Type genericType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+    		Class<?> elementType = (Class<?>) genericType;
+
+    		String[] items = raw.split(";");
+    		List<Object> list = new ArrayList<>();
+    		for (String item : items) {
+    			String trimmed = item.trim();
+    			if (elementType == Integer.class) {
+    				list.add(Integer.parseInt(trimmed));
+    			} else if (elementType == LocalDateTime.class) {
+    				DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    				list.add(LocalDateTime.parse(trimmed, formatter));
+    			} 
+    		}
+    		return list;
+    	}
+
+    	return raw; // fallback
+    }
+    
+    private static Class<? extends OpenData> findMatchingSubclass(Set<String> headers) throws ClassNotFoundException {
+    	 Reflections reflections = new Reflections("ParkingBuddy.dataGetter");
+         Set<Class<? extends OpenData>> subclasses = reflections.getSubTypesOf(OpenData.class);
+
+        for (Class<? extends OpenData> clazz : subclasses) {
+            if (matchesHeaders(clazz, headers)) {
+                return clazz;
+            }
+        }
+
+        throw new IllegalArgumentException("No matching subclass found for headers: " + headers);
+    }
+    
+    private static boolean matchesHeaders(Class<?> clazz, Set<String> headers) {
+        for (String header : headers) {
+            if (!hasFieldInClassHierarchy(clazz, header)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private static boolean hasFieldInClassHierarchy(Class<?> clazz, String fieldName) {
+        Class<?> current = clazz;
+        while (current != null) {
+            try {
+                current.getDeclaredField(fieldName);
+                return true;
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass();
+            }
+        }
+        return false;
+    }
+    
+    private static ParkingStation parseParkingStationData(String jsonResponse) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        JsonNode rootNode = objectMapper.readTree(jsonResponse);
+        JsonNode dataArray = rootNode.get("data");
+
+        if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
+            throw new IllegalArgumentException("No data available in JSON response.");
+        }
+
+        JsonNode firstElement = dataArray.get(0);
+
+        String name = firstElement.get("sname").asText();
+        String municipality = firstElement.get("smetadata.municipality").asText();
+        int capacity = firstElement.get("smetadata.capacity").asInt();
+
+        // get the coordinates
+        JsonNode coordinateNode = firstElement.get("scoordinate");
+        double longitude = coordinateNode.get("x").asDouble();
+        double latitude = coordinateNode.get("y").asDouble();
+        Coordinate coordinates = new Coordinate (longitude, latitude);
+
+        ArrayList<LocalDateTime> timestamps = new ArrayList<>();
+        ArrayList<Integer> free_spots = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
+
+        // Iterate over all elements in the rootNode array
+        for (JsonNode node : dataArray) {
+            String timestampStr = node.get("_timestamp").asText();
+            if (timestampStr == null || timestampStr.isEmpty()) {
+                continue;
+            }
+            LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
+            int value = node.get("mvalue").asInt();
+
+            timestamps.add(timestamp);
+            free_spots.add(value);
+        }
+        return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
     }
 
     /*method to generate a uniform name for the files, in which historical parking data is stored
@@ -47,7 +252,7 @@ public class CSVFile implements ReadData, SaveData{
     //which is responsible to read and write data (e.g Prediction, automated data request)
     public static String genFilePathPS(ParkingStation station){
         String folder = "./historicalData/";
-        return folder + station.getName() + ".csv";
+        return folder + station.getName().replace("/", "-") + ".csv";
     }
 
     @Override
@@ -104,6 +309,26 @@ public class CSVFile implements ReadData, SaveData{
             return value.toString();
         } else {
             return "";
+        }
+    }
+    
+    private Object parseValue(Class<?> type, String raw) {
+        if (type == List.class || type == ArrayList.class) {
+            // Assume List<String>
+            if (raw.isEmpty()) return new ArrayList<>();
+            return new ArrayList<>(Arrays.asList(raw.split(";")));
+        } else if (type == Point.class) {
+            if (raw.isEmpty()) return null;
+            String[] parts = raw.split(",");
+            return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+        } else if (type == int.class || type == Integer.class) {
+            return Integer.parseInt(raw);
+        } else if (type == double.class || type == Double.class) {
+            return Double.parseDouble(raw);
+        } else if (type == boolean.class || type == Boolean.class) {
+            return Boolean.parseBoolean(raw);
+        } else {
+            return raw;
         }
     }
 

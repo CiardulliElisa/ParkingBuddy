@@ -43,7 +43,6 @@ public class ParkingBuddyController{
         return stations.stream().findFirst().orElse(null);
     }
 
-    //will be removed
     @GetMapping("/api/points")
     @ResponseBody
     public Map<String, Coordinate> getPoints() {    	
