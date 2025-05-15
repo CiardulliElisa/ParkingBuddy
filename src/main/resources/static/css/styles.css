@@ -6,12 +6,10 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
 }
 
 header {
-    background-color: #6c757d;
+    background-color: #28a745;
     color: white;
     padding: 15px 20px;
     text-align: left;
@@ -23,6 +21,10 @@ header h1 {
     font-size: 28px;
 }
 
+.icon {
+    margin-right: 10px;
+}
+
 .container {
     padding: 20px;
     max-width: 100%;
@@ -30,14 +32,12 @@ header h1 {
 }
 
 .map {
-    background-color: #e9ecef;
     border-radius: 8px;
-    overflow: hidden;
 }
 
 #map {
     height: 100%;
-    min-height: 400px;
+    min-height: 100%;
     width: 100%;
 }
 

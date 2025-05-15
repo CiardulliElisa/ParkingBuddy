@@ -32,7 +32,19 @@ public class ParkingBuddyController{
 
     @PostMapping("/home")
     public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
-        return "redirect:/chart";
+        return "redirect:/chart?station=" + station + "&date=" + date;
+    }
+
+    @GetMapping("/chart")
+    public String getChart(@RequestParam String station,
+                           @RequestParam String date,
+                           Model model) throws IOException {
+        List<DataPoint> dataPoints = chartService.getDataPoints();
+        model.addAttribute("dataPoints", dataPoints);
+        model.addAttribute("station", station);
+        model.addAttribute("date", date);
+
+        return "chart";
     }
 
     @GetMapping("/api/stationData")
@@ -59,13 +71,6 @@ public class ParkingBuddyController{
 //        return "redirect:/chart"; //opens home.html
 //    }
 //
-    @GetMapping("/chart")
-    public String getChart(Model model) throws IOException {
-        List<DataPoint> dataPoints = chartService.getDataPoints();
-        model.addAttribute("dataPoints", dataPoints);
-        model.addAttribute("stationNames", allStations);
-        return "chart";
-    }
 //}
 
 
