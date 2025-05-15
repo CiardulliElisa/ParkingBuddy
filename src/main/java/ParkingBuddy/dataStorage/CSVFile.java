@@ -68,30 +68,26 @@ public class CSVFile implements ReadData, SaveData{
     			CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
     			) {
     		List<CSVRecord> records = parser.getRecords();
+    		
     		if (records.isEmpty()) {
     			throw new IllegalArgumentException("CSV file is empty.");
     		}
+    		
+    		//get class from list of subclasses
     		Class<? extends OpenData> clazz = findMatchingSubclass(parser.getHeaderMap().keySet());
 
     		CSVRecord record = records.get(0);
     		OpenData data = clazz.getDeclaredConstructor().newInstance();
-
-    		for (String header : parser.getHeaderMap().keySet()) {
-    			Field field;
-    			try {
-    				field = clazz.getDeclaredField(header);
-    			} catch (NoSuchFieldException e) {
-    				field = clazz.getSuperclass().getDeclaredField(header);
-    			}
-
+    		
+    		for (String classVariable : parser.getHeaderMap().keySet()) {
+    			Field field = clazz.getDeclaredField(classVariable);
     			field.setAccessible(true);
-    			String raw = record.get(header);
+    			
+    			String raw = record.get(classVariable);
     			Object value = parseValue2(field.getType(), raw, field);
     			field.set(data, value);
     		}
 
-    		// Handle Lists (timestamps, free_spots) if they are not in the first record
-    		// Read all records (assuming historical values for these fields)
     		Field tsField = clazz.getDeclaredField("timestamps");
     		Field freeField = clazz.getDeclaredField("free_spots");
     		tsField.setAccessible(true);
@@ -168,80 +164,78 @@ public class CSVFile implements ReadData, SaveData{
     }
     
     private static Class<? extends OpenData> findMatchingSubclass(Set<String> headers) throws ClassNotFoundException {
-    	 Reflections reflections = new Reflections("ParkingBuddy.dataGetter");
-         Set<Class<? extends OpenData>> subclasses = reflections.getSubTypesOf(OpenData.class);
-
-        for (Class<? extends OpenData> clazz : subclasses) {
-            if (matchesHeaders(clazz, headers)) {
-                return clazz;
-            }
-        }
-
-        throw new IllegalArgumentException("No matching subclass found for headers: " + headers);
+    	Reflections reflections = new Reflections("ParkingBuddy.dataGetter");
+    	Set<Class<? extends OpenData>> subclasses = reflections.getSubTypesOf(OpenData.class);
+    	for (Class<? extends OpenData> clazz : subclasses) {
+    		if (matchesHeaders(clazz, headers)) {
+    			return clazz;
+    		}
+    	}
+    	throw new IllegalArgumentException("No matching subclass found for headers: " + headers);
     }
     
     private static boolean matchesHeaders(Class<?> clazz, Set<String> headers) {
-        for (String header : headers) {
-            if (!hasFieldInClassHierarchy(clazz, header)) {
-                return false;
-            }
-        }
-        return true;
+    	for (String header : headers) {
+    		if (!hasFieldInClassHierarchy(clazz, header)) {
+    			return false;
+    		}
+    	}
+    	return true;
     }
     
     private static boolean hasFieldInClassHierarchy(Class<?> clazz, String fieldName) {
-        Class<?> current = clazz;
-        while (current != null) {
-            try {
-                current.getDeclaredField(fieldName);
-                return true;
-            } catch (NoSuchFieldException e) {
-                current = current.getSuperclass();
-            }
-        }
-        return false;
+    	Class<?> current = clazz;
+    	while (current != null) {
+    		try {
+    			current.getDeclaredField(fieldName);
+    			return true;
+    		} catch (NoSuchFieldException e) {
+    			current = current.getSuperclass();
+    		}
+    	}
+    	return false;
     }
     
-    private static ParkingStation parseParkingStationData(String jsonResponse) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        JsonNode rootNode = objectMapper.readTree(jsonResponse);
-        JsonNode dataArray = rootNode.get("data");
-
-        if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
-            throw new IllegalArgumentException("No data available in JSON response.");
-        }
-
-        JsonNode firstElement = dataArray.get(0);
-
-        String name = firstElement.get("sname").asText();
-        String municipality = firstElement.get("smetadata.municipality").asText();
-        int capacity = firstElement.get("smetadata.capacity").asInt();
-
-        // get the coordinates
-        JsonNode coordinateNode = firstElement.get("scoordinate");
-        double longitude = coordinateNode.get("x").asDouble();
-        double latitude = coordinateNode.get("y").asDouble();
-        Coordinate coordinates = new Coordinate (longitude, latitude);
-
-        ArrayList<LocalDateTime> timestamps = new ArrayList<>();
-        ArrayList<Integer> free_spots = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
-
-        // Iterate over all elements in the rootNode array
-        for (JsonNode node : dataArray) {
-            String timestampStr = node.get("_timestamp").asText();
-            if (timestampStr == null || timestampStr.isEmpty()) {
-                continue;
-            }
-            LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
-            int value = node.get("mvalue").asInt();
-
-            timestamps.add(timestamp);
-            free_spots.add(value);
-        }
-        return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
-    }
+//    private static ParkingStation parseParkingStationData(String jsonResponse) throws IOException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//
+//        JsonNode rootNode = objectMapper.readTree(jsonResponse);
+//        JsonNode dataArray = rootNode.get("data");
+//
+//        if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
+//            throw new IllegalArgumentException("No data available in JSON response.");
+//        }
+//
+//        JsonNode firstElement = dataArray.get(0);
+//
+//        String name = firstElement.get("sname").asText();
+//        String municipality = firstElement.get("smetadata.municipality").asText();
+//        int capacity = firstElement.get("smetadata.capacity").asInt();
+//
+//        // get the coordinates
+//        JsonNode coordinateNode = firstElement.get("scoordinate");
+//        double longitude = coordinateNode.get("x").asDouble();
+//        double latitude = coordinateNode.get("y").asDouble();
+//        Coordinate coordinates = new Coordinate (longitude, latitude);
+//
+//        ArrayList<LocalDateTime> timestamps = new ArrayList<>();
+//        ArrayList<Integer> free_spots = new ArrayList<>();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
+//
+//        // Iterate over all elements in the rootNode array
+//        for (JsonNode node : dataArray) {
+//            String timestampStr = node.get("_timestamp").asText();
+//            if (timestampStr == null || timestampStr.isEmpty()) {
+//                continue;
+//            }
+//            LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
+//            int value = node.get("mvalue").asInt();
+//
+//            timestamps.add(timestamp);
+//            free_spots.add(value);
+//        }
+//        return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
+//    }
 
     /*method to generate a uniform name for the files, in which historical parking data is stored
     * input: Parking station to save
