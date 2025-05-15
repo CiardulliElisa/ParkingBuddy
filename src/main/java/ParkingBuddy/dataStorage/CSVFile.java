@@ -48,7 +48,6 @@ public class CSVFile implements ReadData, SaveData{
 		try {
 			CSVFile reader = new CSVFile();
 	    	OpenData dataStation = reader.readData("./historicalData/TURIST-PARKING.csv");
-	    	System.out.println("data Station:" +dataStation);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

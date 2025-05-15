@@ -1,12 +1,24 @@
+let map;
+
 // Initialize the map with a center and zoom level
 function initializeMap() {
-    const map = L.map('map').setView([46.638780, 11.350111], 9);
+    map = L.map('map').setView([46.638780, 11.350111], 9);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
     }).addTo(map);
 
     loadMarkers(map);
+}
+
+// Zooms to a parking station when selected
+function changeMap(lat, lng) {
+    if (map && typeof map.flyTo === 'function') {
+        map.flyTo([lat, lng], 17, {
+            animate: true,
+            duration: 2
+        });
+    }
 }
 
 // Load markers on the map from the /api/points endpoint
@@ -27,35 +39,45 @@ function loadMarkers(map) {
 function createMarker(map, name, point) {
     L.marker([point.lat, point.lng])
         .addTo(map)
-        .bindPopup(name || 'Unnamed Station');
+        .bindPopup(name || 'Unnamed Station')
+        .on('click', function () {
+            fetchAndDisplayStation(name);
+        });
 }
 
-// Fetch and display station data when the dropdown is changed
+//Change dropdown
 function handleDropdownChange() {
     const dropdown = document.getElementById('parkingDropdown');
+    dropdown.addEventListener('change', function () {
+        const selectedName = this.value;
+        if (!selectedName) return;
+
+        fetchAndDisplayStation(selectedName);
+    });
+}
+
+// Fetch and display station data
+function fetchAndDisplayStation(name) {
     const infoDiv = document.getElementById('stationInfo');
     const loading = document.getElementById('loading');
 
-    dropdown.addEventListener('change', function () {
-        const selectedName = this.value;
+    loading.style.display = 'block';
+    infoDiv.innerHTML = '';
 
-        if (!selectedName) return;
-
-        loading.style.display = 'block';
-        infoDiv.innerHTML = '';
-
-        fetch(`/api/stationData?name=${encodeURIComponent(selectedName)}`)
-            .then(response => response.json())
-            .then(data => {
-                loading.style.display = 'none';
-                displayStationData(data);
-            })
-            .catch(error => {
-                loading.style.display = 'none';
-                infoDiv.innerHTML = `<p>Error loading station data.</p>`;
-                console.error(error);
-            });
-    });
+    fetch(`/api/stationData?name=${encodeURIComponent(name)}`)
+        .then(response => response.json())
+        .then(data => {
+            loading.style.display = 'none';
+            displayStationData(data);
+            if (data.coordinates) {
+                changeMap(data.coordinates.lat, data.coordinates.lng);
+            }
+        })
+        .catch(error => {
+            loading.style.display = 'none';
+            infoDiv.innerHTML = `<p>Error loading station data.</p>`;
+            console.error(error);
+        });
 }
 
 // Display the station data in the infoDiv
