@@ -14,19 +14,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.StreamSupport;
-
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.reflections.Reflections;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.OpenData;
@@ -82,41 +79,73 @@ public class CSVFile implements ReadData, SaveData{
     		for (String classVariable : parser.getHeaderMap().keySet()) {
     			Field field = clazz.getDeclaredField(classVariable);
     			field.setAccessible(true);
-    			
+
+    			if (Collection.class.isAssignableFrom(field.getType())) {
+    				continue;
+    			}
+
     			String raw = record.get(classVariable);
     			Object value = parseValue2(field.getType(), raw, field);
     			field.set(data, value);
     		}
+    		
+            for (String classVariable : parser.getHeaderMap().keySet()) {
+                Field field = clazz.getDeclaredField(classVariable);
+                field.setAccessible(true);
 
-    		Field tsField = clazz.getDeclaredField("timestamps");
-    		Field freeField = clazz.getDeclaredField("free_spots");
-    		tsField.setAccessible(true);
-    		freeField.setAccessible(true);
+                if (Collection.class.isAssignableFrom(field.getType())) {
+                    // Determine the generic type of the collection
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> genericClass = (Class<?>) listType.getActualTypeArguments()[0];
 
-    		List<LocalDateTime> timestamps = new ArrayList<>();
-    		List<Integer> freeSpots = new ArrayList<>();
-    		DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                    List<Object> aggregatedValues = new ArrayList<>();
 
-    		for (CSVRecord rec : records) {
-    			String tsStr = rec.get("timestamps");
-    			if (tsStr != null && !tsStr.isEmpty()) {
-    				String[] tsStrItems = tsStr.split(";");
-    				for (String tsItem : tsStrItems) {
-    					timestamps.add(LocalDateTime.parse(tsItem.trim(), formatter));
-    				}
-    			}
+                    for (CSVRecord rec : records) {
+                        String fieldStr = rec.get(classVariable);
+                        if (fieldStr == null || fieldStr.isEmpty()) {
+                            continue;
+                        }
+                        String[] items = fieldStr.split(";");
+                        for (String item : items) {
+                            Object parsedItem = parseCollectionItem(genericClass, item.trim());
+                            aggregatedValues.add(parsedItem);
+                        }
+                    }
 
-    			String freeStr = rec.get("free_spots");
-    			if (freeStr != null && !freeStr.isEmpty()) {
-    				String[] freeItems = freeStr.split(";");
-    				for (String freeItem : freeItems) {
-    					freeSpots.add(Integer.parseInt(freeItem.trim()));
-    				}
-    			}
-    		}
+                    // Assign the aggregated list to the field
+                    field.set(data, aggregatedValues);
+                }
+            }
 
-    		tsField.set(data, timestamps);
-    		freeField.set(data, freeSpots);
+//    		Field tsField = clazz.getDeclaredField("timestamps");
+//    		Field freeField = clazz.getDeclaredField("free_spots");
+//    		tsField.setAccessible(true);
+//    		freeField.setAccessible(true);
+//
+//    		List<LocalDateTime> timestamps = new ArrayList<>();
+//    		List<Integer> freeSpots = new ArrayList<>();
+//    		DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+//
+//    		for (CSVRecord rec : records) {
+//    			String tsStr = rec.get("timestamps");
+//    			if (tsStr != null && !tsStr.isEmpty()) {
+//    				String[] tsStrItems = tsStr.split(";");
+//    				for (String tsItem : tsStrItems) {
+//    					timestamps.add(LocalDateTime.parse(tsItem.trim(), formatter));
+//    				}
+//    			}
+//
+//    			String freeStr = rec.get("free_spots");
+//    			if (freeStr != null && !freeStr.isEmpty()) {
+//    				String[] freeItems = freeStr.split(";");
+//    				for (String freeItem : freeItems) {
+//    					freeSpots.add(Integer.parseInt(freeItem.trim()));
+//    				}
+//    			}
+//    		}
+//
+//    		tsField.set(data, timestamps);
+//    		freeField.set(data, freeSpots);
 
     		return data;
 
@@ -125,6 +154,22 @@ public class CSVFile implements ReadData, SaveData{
     	}
     }
 
+    private Object parseCollectionItem(Class<?> genericClass, String raw) {
+        if (genericClass == LocalDateTime.class) {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            return LocalDateTime.parse(raw, formatter);
+        }
+        else if (genericClass == Integer.class) {
+            return Integer.parseInt(raw);
+        }
+        else if (genericClass == String.class) {
+            return raw;
+        }
+        // Add other types here as needed
+        else {
+            throw new IllegalArgumentException("Unsupported collection item type: " + genericClass);
+        }
+    }
 
     private static Object parseValue2(Class<?> type, String raw, Field field) throws Exception {
     	if (raw == null || raw.isEmpty()) return null;
