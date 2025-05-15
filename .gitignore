@@ -33,5 +33,5 @@ build/
 .vscode/
 
 historicalData/*
-!historicalData
+!historicalData/.gitkeep
 
