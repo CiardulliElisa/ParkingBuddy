@@ -1,6 +1,4 @@
 package ParkingBuddy.website;
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /*import ParkingBuddy.chartPoint.ChartService;*/
 import ParkingBuddy.chartPoint.ChartService;
-import ParkingBuddy.chartPoint.DataPoint;
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
@@ -30,11 +27,11 @@ public class ParkingBuddyController{
         return "home";
     }
 
-    @PostMapping("/home")
-    public String greetingSubmit(@RequestParam String date, Model model) {
+/*    @PostMapping("/home")
+    public String predictionSubmit(@RequestParam String date, Model model) {
         model.addAttribute("stationNames", allStations);
         return "redirect:/chart";
-    }
+    }*/
 
     @GetMapping("/api/stationData")
     @ResponseBody
@@ -60,13 +57,13 @@ public class ParkingBuddyController{
 //        return "redirect:/chart"; //opens home.html
 //    }
 //
-    @GetMapping("/chart")
+/*    @GetMapping("/chart")
     public String getChart(Model model) throws IOException {
         List<DataPoint> dataPoints = chartService.getDataPoints();
         model.addAttribute("dataPoints", dataPoints);
         model.addAttribute("stationNames", allStations);
         return "chart";
-    }
+    }*/
 //}
 
 

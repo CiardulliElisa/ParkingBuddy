@@ -61,11 +61,3 @@ header h1 {
         height: auto;
     }
 }
-    button{
-        background-color: green;
-        color: white;
-        border: none;
-        padding: 5px;
-        padding-left: 10px;
-        padding-right: 10px;
-    }
