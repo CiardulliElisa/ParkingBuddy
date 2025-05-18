@@ -30,8 +30,8 @@ import ParkingBuddy.dataGetter.ParkingStation;
 public class CSVFile implements ReadData, SaveData{
 
 
-    public static void main(String[] args) throws IOException {
-
+//    public static void main(String[] args) throws IOException {
+//
 //      // get data to store
 //      LocalDateTime date =LocalDateTime.now().minusDays(10);
 //      LocalDateTime date2 = LocalDateTime.now();
@@ -44,16 +44,16 @@ public class CSVFile implements ReadData, SaveData{
 //      CSVFile csvFile = new CSVFile();
 //      String filepath = "./historicalData/test1.csv";
 //      csvFile.saveData(save, filepath);
-    	
-		try {
-			CSVFile reader = new CSVFile();
-	    	OpenData dataStation = reader.readData("./historicalData/TURIST-PARKING.csv");
-	    	System.out.println("data Station:" +dataStation);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    	
-  }
+//
+//		try {
+//			CSVFile reader = new CSVFile();
+//	    	OpenData dataStation = reader.readData("./historicalData/TURIST-PARKING.csv");
+//	    	System.out.println("data Station:" +dataStation);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//  }
 
     @Override   
     /* 
@@ -175,18 +175,6 @@ public class CSVFile implements ReadData, SaveData{
     	return false;
     }
 
-    /*method to generate a uniform name for the files, in which historical parking data is stored
-    * input: Parking station to save
-    * Output: String, in which the parking station should be stored
-    * */
-
-    //NOTE: this method does not have to stay here. Can be written in the method,
-    //which is responsible to read and write data (e.g Prediction, automated data request)
-    public static String genFilePathPS(ParkingStation station){
-        String folder = "./historicalData/";
-        return folder + station.getName().replace("/", "-") + ".csv";
-    }
-
     @Override
     /*Stores data into a specified filepath in csv format
     * Input: subclass object of the OpenData class, path of the csv file
@@ -243,46 +231,4 @@ public class CSVFile implements ReadData, SaveData{
             return "";
         }
     }
-
-
-    //alte methode zum lesen von datenfile
-    /*
-
-    private static int getPrediction(String data, String dayOfWeek, String startingHour, String endingHour) {
-//    	int day = LocalDate.now().getDayOfWeek().toString().compareTo(dayOfWeek);
-//    	LocalDate beforeOneWeek = LocalDate.now().minusDays(day);
-    	ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    	Response PiazzaWalther = null;
-
-    	try {
-
-    	    PiazzaWalther = objectMapper.readValue(data, Response.class);
-
-
-    	} catch (IOException e) {
-    	    e.printStackTrace();
-    	}
-
-    	List<Integer> freeLots = new ArrayList<>();
-
-    	for(ParkingStation one : PiazzaWalther.data) {
-    		if(one._timestamp.contains(LocalDate.now().toString())) {
-    			freeLots.add(one.mvalue);
-    		}
-    	}
-
-
-    	int numbers = freeLots.size();
-    	int freeAdd = 0;
-    	for(Integer one : freeLots) {
-    		freeAdd += one;
-    	}
-
-    	int prediction = freeAdd/numbers;
-    	System.out.println(prediction);
-
-    	return prediction;
-    }
-    *
-    * */
 }

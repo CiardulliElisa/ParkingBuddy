@@ -1,4 +1,4 @@
-/*
+
 package ParkingBuddy.Prediction;
 
 import ParkingBuddy.dataGetter.ParkingData;
@@ -6,113 +6,125 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+
+import ParkingBuddy.dataStorage.CSVFile;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
 import weka.core.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 
- // Set class index to last attribute
+
+// Set class index to last attribute
 public class ParkingStationModel implements Model {
-	private final Classifier model;
-	private final Instances datasetStructure;
+     public final Classifier model;
+     private final Instances datasetStructure;
+     public final List<DataPoint> listOfPoints;
 
-	public LocalDateTime date;
-	public LocalDateTime startDate;
-	public LocalDateTime endDate;
-	*/
-/*public Object[] data;*//*
+     private List<DataPoint> pointsToList(ParkingStation parkingStation) {
+         ArrayList<Integer> freeSpots = parkingStation.getFree_spots();
+         ArrayList<LocalDateTime> time = parkingStation.getTimestamps();
+         List<DataPoint> dataPoints = new ArrayList<DataPoint>();
+         for(int count = 0; count < parkingStation.getFree_spots().size(); count++) {
+             DataPoint aPoint = new DataPoint(time.get(count), freeSpots.get(count));
+             dataPoints.add(aPoint);
+         }
+         return dataPoints;
+     }
 
+     public ParkingStationModel(String station) throws Exception {
+         String filepath = genFilePathPS(station);
+         CSVFile csv = new CSVFile();
+         ParkingStation parkingStation = (ParkingStation) csv.readData(filepath);
+         List<DataPoint> historicalData = pointsToList(parkingStation);
+         historicalData = reduceDataPoints(historicalData);
+         this.listOfPoints = historicalData;
 
+         ArrayList<Attribute> attributes = new ArrayList<>();
+         attributes.add(new Attribute("hour"));
+         attributes.add(new Attribute("dayOfWeek"));
+         attributes.add(new Attribute("month"));
+         attributes.add(new Attribute("freeSlots")); // target
 
-	 public ParkingStation hourAverage(ParkingStation aLotOfTimestamps){
-//		 Map<LocalDateTime, Integer> newMap = new HashMap<>();
-//		 Map<LocalDateTime, Integer> givenMap = aLotOfTimestamps.getTimestampValueMap();
-//		 List<Map.Entry<LocalDateTime, Integer>> list = new ArrayList<>(givenMap.entrySet());
-//		 list.sort(Map.Entry.comparingByKey());
-//		 LocalDateTime key = list.getFirst().getKey();
-//		 for(LocalDateTime one : list){
-//			 while(givenMap.get(givenMap.keySet().iterator().next())){}
-//		 }
+         datasetStructure = new Instances("ParkingData", attributes, historicalData.size());
+         datasetStructure.setClassIndex(datasetStructure.numAttributes() - 1);
 
-		 //ParkingStation lessData = new ParkingStation();
+         for (DataPoint data : historicalData) {
+             LocalDateTime dt = data.timestamp;
+             Instance instance = new DenseInstance(4);
+             instance.setValue(attributes.get(0), dt.getHour());
+             instance.setValue(attributes.get(1), dt.getDayOfWeek().getValue());
+             instance.setValue(attributes.get(2), dt.getMonthValue());
+             instance.setValue(attributes.get(3), data.freeSlots);
+             datasetStructure.add(instance);
+         }
 
-		 return null;
-
-	 }
-
-	 public ParkingStationModel(Map<LocalDateTime, Integer> historicalData) throws Exception {
-		 ArrayList<Attribute> attributes = new ArrayList<>();
-		 attributes.add(new Attribute("hour"));
-		 attributes.add(new Attribute("dayOfWeek"));
-		 attributes.add(new Attribute("month"));
-		 attributes.add(new Attribute("freeSlots")); // target
-
-		 datasetStructure = new Instances("ParkingData", attributes, historicalData.size());
-		 datasetStructure.setClassIndex(datasetStructure.numAttributes() - 1);
-
-		 // Build training data
-		 for (Map.Entry<LocalDateTime, Integer> entry : historicalData.entrySet()) {
-			 LocalDateTime dt = entry.getKey();
-			 Instance instance = new DenseInstance(4);
-			 instance.setValue(attributes.get(0), dt.getHour());
-			 instance.setValue(attributes.get(1), dt.getDayOfWeek().getValue());
-			 instance.setValue(attributes.get(2), dt.getMonthValue());
-			 instance.setValue(attributes.get(3), entry.getValue());
-			 datasetStructure.add(instance);
-		 }
-
-		 // Train model
-		 this.model = new RandomForest();
-		 model.buildClassifier(datasetStructure);
-	 }
-
-	 public static void main(String [] args) throws IOException {
-//		 ParkingData data= new ParkingData();
-//		 LocalDateTime start = LocalDateTime.of(2024, 4, 29, 10, 0);
-//		 LocalDateTime end = LocalDateTime.of(2025, 4, 30, 23, 0);
-//		 int code = 103;
-//		 ParkingStation station = data.getHistoricalData(start, end, code);
-
-	 }
-
-*/
-/*	@Override
-	public void modelData() {
-		// TODO Auto-generated method stub
-	}*//*
+         this.model = new RandomForest();
+         model.buildClassifier(datasetStructure);
+     }
 
 
-//	@Override
-//	public Object[] getPrediction(LocalDateTime date) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-	public int getPrediction(LocalDateTime futureDateTime) throws Exception {
-		Instance futureInstance = new DenseInstance(4);
-		futureInstance.setDataset(datasetStructure);
-		futureInstance.setValue(0, futureDateTime.getHour());
-		futureInstance.setValue(1, futureDateTime.getDayOfWeek().getValue());
-		futureInstance.setValue(2, futureDateTime.getMonthValue());
 
-		double prediction = model.classifyInstance(futureInstance);
-		return (int) Math.round(prediction);
-	}
-}
+     public List<DataPoint> getPrediction(LocalDateTime futureDateTime) throws Exception {
+         List<DataPoint> newList = new ArrayList<>();
+         for(int count = 0; count < 24; count++) {
+             LocalDateTime iterator = LocalDateTime.of(futureDateTime.getYear(), futureDateTime.getMonthValue(), futureDateTime.getDayOfMonth(), (23-count), 0);
+             Instance futureInstance = new DenseInstance(4);
+             futureInstance.setDataset(datasetStructure);
+             futureInstance.setValue(0, iterator.getHour());
+             futureInstance.setValue(1, iterator.getDayOfWeek().getValue());
+             futureInstance.setValue(2, iterator.getMonthValue());
+             newList.add(new DataPoint(iterator,(int) Math.round(model.classifyInstance(futureInstance))));
+         }
 
-//	@Override
-//	public Object[] getPrediction(LocalDateTime startDate, LocalDateTime endDate) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-
-//	public static void myTry(){
-//		ConverterUtils.DataSource source = new ConverterUtils.DataSource("data/your-data.arff");
-//		Instances data = source.getDataSet();
-//		if (data.classIndex() == -1)
-//			data.setClassIndex(data.numAttributes() - 1);
-//	}
+         return newList;
+     }
 
 
-*/
+     /*method to generate a uniform name for the files, in which historical parking data is stored
+      * input: Parking station to save
+      * Output: String, in which the parking station should be stored
+      * */
+     private static String genFilePathPS(String station) {
+         String folder = "./historicalData/";
+         return folder + station.replace("/", "-") + ".csv";
+     }
+
+    public static List<DataPoint> reduceDataPoints(List<DataPoint> listOfPoints) {
+        List<DataPoint> newList = new ArrayList<DataPoint>();
+        for(int i = 0; i < listOfPoints.size(); i++){
+            LocalDateTime timestamp = listOfPoints.get(i).timestamp;
+            LocalDateTime timestamp2 = timestamp.plusHours(1);
+            int average = 0;
+            int number = 0;
+            while(listOfPoints.get(i).timestamp.isBefore(timestamp2)){
+                average += listOfPoints.get(i).freeSlots;
+                number++;
+                i++;
+                if(i == listOfPoints.size()){
+                    break;
+                }
+            }
+            if(number != 0) {
+                newList.add(new DataPoint(timestamp, (average / number)));
+            }
+            i--;
+
+        }
+        return newList;
+    }
+
+
+    public List<DataPoint> getDataPoints(String station) throws Exception {
+        List<DataPoint> deleteSome = new ArrayList<>();
+        for(DataPoint aPoint : this.listOfPoints){
+            if(aPoint.timestamp.isAfter(LocalDateTime.now().minusDays(7))){
+                deleteSome.add(aPoint);
+            }
+        }
+        return deleteSome;
+    }
+
+ }
+
+
