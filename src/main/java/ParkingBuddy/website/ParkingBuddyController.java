@@ -21,7 +21,9 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
-    private Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+    private static String stationName = "";
+    private static String predictionDate = "";
+    private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
 
     @GetMapping("/")
@@ -46,8 +48,9 @@ public class ParkingBuddyController{
 
     @PostMapping("/home")
     public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
+        stationName = station;
+        predictionDate = date;
         model.addAttribute("stationNames", allStations);
-
         return "redirect:/chart?station=" + station + "&date=" + date;
     }
 
@@ -56,16 +59,6 @@ public class ParkingBuddyController{
     //    return "redirect:/chart?station=" + station + "&date=" + date;
     //}
 
-    @GetMapping("/chart")
-    public String getChart(@RequestParam String station,
-                           @RequestParam String date,
-                           Model model) throws IOException {
-        List<DataPoint> dataPoints = null;
-        model.addAttribute("dataPoints", dataPoints);
-        model.addAttribute("station", station);
-        model.addAttribute("date", date);
-        return "chart";
-    }
 
     @GetMapping("/api/stationData")
     @ResponseBody
@@ -84,13 +77,58 @@ public class ParkingBuddyController{
     		    ));
     }
 
+    @GetMapping("/chart")
+    public String getChartPage(@RequestParam String station, @RequestParam String date, Model model) {
+        model.addAttribute("station", station);
+        model.addAttribute("date", date);
+        return "chart";
+    }
 
-//shows how to display a graph
-//    @GetMapping("/")
-//    public String home() {
-//        return "redirect:/chart"; //opens home.html
-//    }
+    @GetMapping("/api/dataPoints")
+    @ResponseBody
+    public List<DataPoint> getDataPoints() throws Exception {
+        ParkingStationModel predModel = new ParkingStationModel(stationName);
+        return predModel.getDataPoints(stationName);
+    }
+
+    @GetMapping("/api/prediction")
+    @ResponseBody
+    public List<DataPoint> getPrediction() throws Exception {
+        ParkingStationModel predModel = new ParkingStationModel(stationName);
+        String[] dates = predictionDate.split("-");
+        LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
+        List<DataPoint> prediction = predModel.getPrediction(dateForPrediction);
+        return prediction;
+    }
+
+
 //
+//    @GetMapping("/chart")
+//    public String getChart(@RequestParam String station, @RequestParam String date, Model model) throws Exception {
+//        ParkingStationModel predModel = new ParkingStationModel(station);
+//        List<DataPoint> dataPoints = predModel.getDataPoints(station);
+//        String[] dates =date.split("-");
+//        LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
+//        List<DataPoint> prediction = predModel.getPrediction(dateForPrediction);
+//        System.out.println(prediction);
+//        model.addAttribute("prediction", prediction);
+//        model.addAttribute("dataPoints", dataPoints);
+//        model.addAttribute("station", station);
+//        model.addAttribute("date", date);
+//        return "chart";
+//    }
+
+//    @GetMapping("/chart")
+//    public String getChart(@RequestParam String station,
+//                           @RequestParam String date,
+//                           Model model) throws IOException {
+//
+//        model.addAttribute("dataPoints", dataPoints);
+//        model.addAttribute("station", station);
+//        model.addAttribute("date", date);
+//
+//        return "chart";
+//    }
 //}
 
 
@@ -115,6 +153,14 @@ public class ParkingBuddyController{
 //        model.addAttribute("hello", new HelloWorld());
 //        return "home";
 //    }
+
+
+    //shows how to display a graph
+//    @GetMapping("/")
+//    public String home() {
+//        return "redirect:/chart"; //opens home.html
+//    }
+//
 }
 
 
