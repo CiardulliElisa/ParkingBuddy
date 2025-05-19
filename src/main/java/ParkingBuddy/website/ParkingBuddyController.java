@@ -1,4 +1,5 @@
 package ParkingBuddy.website;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +21,27 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
-    private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+    private Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+    private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
 
-	@GetMapping("/")
-    public String home(Model model) {
-        model.addAttribute("allStations", allStations);
+    @GetMapping("/")
+    public String home(@RequestParam(required = false) String municipality, Model model) {
+
+        model.addAttribute("allMunicipalities", allMunicipalities);
+
+        if (municipality != null && !municipality.isEmpty()) {
+            Set<ParkingStation> filteredStations = ParkingData.getLatestByMunicipality(municipality);
+            model.addAttribute("allStations", filteredStations);
+            model.addAttribute("selectedMunicipality", municipality);
+        } else {
+            model.addAttribute("allStations", allStations);
+        }
         return "home";
+    }
+
+    @PostMapping("/municipality")
+    public String municipalitySelection(@RequestParam String municipality) {
+        return "redirect:/?municipality=" + municipality;
     }
 
     @PostMapping("/home")
@@ -35,7 +51,21 @@ public class ParkingBuddyController{
         return "redirect:/chart?station=" + station + "&date=" + date;
     }
 
+    //@PostMapping("/chart")
+    //public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
+    //    return "redirect:/chart?station=" + station + "&date=" + date;
+    //}
 
+    @GetMapping("/chart")
+    public String getChart(@RequestParam String station,
+                           @RequestParam String date,
+                           Model model) throws IOException {
+        List<DataPoint> dataPoints = null;
+        model.addAttribute("dataPoints", dataPoints);
+        model.addAttribute("station", station);
+        model.addAttribute("date", date);
+        return "chart";
+    }
 
     @GetMapping("/api/stationData")
     @ResponseBody
@@ -55,32 +85,12 @@ public class ParkingBuddyController{
     }
 
 
-    @GetMapping("/chart")
-    public String getChart(@RequestParam String station, @RequestParam String date, Model model) throws Exception {
-        ParkingStationModel predModel = new ParkingStationModel(station);
-        List<DataPoint> dataPoints = predModel.getDataPoints(station);
-        String[] dates =date.split("-");
-        LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
-        List<DataPoint> prediction = predModel.getPrediction(dateForPrediction);
-        System.out.println(prediction);
-        model.addAttribute("prediction", prediction);
-        model.addAttribute("dataPoints", dataPoints);
-        model.addAttribute("station", station);
-        model.addAttribute("date", date);
-        return "chart";
-    }
-
-//    @GetMapping("/chart")
-//    public String getChart(@RequestParam String station,
-//                           @RequestParam String date,
-//                           Model model) throws IOException {
-//
-//        model.addAttribute("dataPoints", dataPoints);
-//        model.addAttribute("station", station);
-//        model.addAttribute("date", date);
-//
-//        return "chart";
+//shows how to display a graph
+//    @GetMapping("/")
+//    public String home() {
+//        return "redirect:/chart"; //opens home.html
 //    }
+//
 //}
 
 
@@ -105,14 +115,6 @@ public class ParkingBuddyController{
 //        model.addAttribute("hello", new HelloWorld());
 //        return "home";
 //    }
-
-
-    //shows how to display a graph
-//    @GetMapping("/")
-//    public String home() {
-//        return "redirect:/chart"; //opens home.html
-//    }
-//
 }
 
 
