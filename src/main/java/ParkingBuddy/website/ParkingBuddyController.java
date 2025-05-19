@@ -23,9 +23,11 @@ import ParkingBuddy.dataGetter.ParkingStation;
 public class ParkingBuddyController{
     private final ChartService chartService = new ChartService();
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+    private final Set<String> allMunicipalities = ParkingData.getAllMunicipalties();
 
 	@GetMapping("/")
     public String home(Model model) {
+        model.addAttribute("allMunicipalities", allMunicipalities);
         model.addAttribute("allStations", allStations);
         return "home";
     }

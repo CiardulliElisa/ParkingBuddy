@@ -33,8 +33,22 @@
                 <div class="card h-100 parkingStations">
                     <div class="card-body">
 
+                        <div class="mt-3 p-0">
+                            <form id="municipalityForm" action="#" method="post">
+                                <div>
+                                    <div th:each="municipality : ${allMunicipalities}" class="form-check form-check-inline small">
+                                        <input class="form-check-input" type="radio" th:id="${municipality}" th:name="municipality" th:value="${municipality}"
+                                               onchange="document.getElementById('municipalityForm').submit()" />
+                                        <label class="form-check-label" th:for="${municipality}" th:text="${municipality}"></label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        </br>
+
                         <form th:action="@{/home}" method="POST">
-                            <label for="parkingDropdown" class="form-label">Select Parking Station:</label>
+                            <label for="parkingDropdown" class="form-label"><strong>Select Parking Station:</strong></label>
                             <select id="parkingDropdown" name="station" class="form-select mb-3">
                                 <option value="">Select a station</option>
                                 <option th:each="station : ${allStations}" th:value="${station.getName()}" th:text="${station.getName()}"></option>

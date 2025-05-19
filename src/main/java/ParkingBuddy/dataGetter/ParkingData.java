@@ -134,6 +134,30 @@ public class ParkingData extends GetData {
         return stations;
     }
 
+    public static Set<String> getAllMunicipalties() {
+        String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
+                + "?limit=-1&offset=0&shownull=false&distinct=true"
+                + "&where=tname.eq.free"
+                + "&select=smetadata.municipality";
+
+        Set<String> municipalities  = new HashSet<>();
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(new URL(url));
+            JsonNode dataArray = root.path("data");
+
+            for (JsonNode entry : dataArray) {
+                String municipality = entry.path("smetadata.municipality").asText(null);
+                municipalities.add(municipality);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return municipalities;
+    }
+
     public static Set<ParkingStation> findLatestData(String nameInput) {
         if (nameInput == null) {
             throw new IllegalArgumentException("Station name must not be null.");
@@ -207,6 +231,6 @@ public class ParkingData extends GetData {
     }
 
     public static void main(String[] args) {
-        System.out.println(getLatestByMunicipality("Bolzano"));
+        System.out.println(getAllMunicipalties());
     }
 }
