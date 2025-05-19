@@ -41,8 +41,20 @@ function createMarker(map, name, point) {
         .addTo(map)
         .bindPopup(name || 'Unnamed Station')
         .on('click', function () {
-            fetchAndDisplayStation(name);
+            setDropdownValue(name);  
         });
+}
+
+// Set the dropdown to the value of the clicked marker
+function setDropdownValue(stationName) {
+    let dropdown = document.getElementById('parkingDropdown');
+    for (let i = 0; i < dropdown.options.length; i++) {
+        if (dropdown.options[i].value === stationName) {
+            dropdown.selectedIndex = i;
+            break;
+        }
+    }
+    dropdown.dispatchEvent(new Event('change'));
 }
 
 // Handle station dropdown changes by adding event listener
@@ -74,6 +86,10 @@ function handleDropdownChange() {
             .then(response => response.json())
             .then(data => {
                 if (loading) loading.style.display = 'none';
+
+                if (data.coordinates) {
+                    changeMap(data.coordinates.lat, data.coordinates.lng);
+                }
 
                 if (data && data.timestamps && data.timestamps.length > 0 && data.free_spots && data.free_spots.length > 0) {
                     displayStationData(data);
