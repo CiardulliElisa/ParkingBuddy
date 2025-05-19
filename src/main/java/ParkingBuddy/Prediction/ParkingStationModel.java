@@ -1,10 +1,7 @@
 
 package ParkingBuddy.Prediction;
 
-import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 import ParkingBuddy.dataStorage.CSVFile;
@@ -59,7 +56,6 @@ public class ParkingStationModel implements Model {
              datasetStructure.add(instance);
          }
 
-         System.out.println("Model is done");
          this.model = new RandomForest();
          model.buildClassifier(datasetStructure);
      }
@@ -78,7 +74,6 @@ public class ParkingStationModel implements Model {
              newList.add(new DataPoint(iterator,(int) Math.round(model.classifyInstance(futureInstance))));
          }
 
-         System.out.println("Prediction is done");
          return newList;
      }
 
@@ -93,7 +88,7 @@ public class ParkingStationModel implements Model {
      }
 
     public static List<DataPoint> reduceDataPoints(List<DataPoint> listOfPoints) {
-        List<DataPoint> newList = new ArrayList<DataPoint>();
+        List<DataPoint> newList = new ArrayList<>();
         for(int i = 0; i < listOfPoints.size(); i++){
             LocalDateTime timestamp = listOfPoints.get(i).timestamp;
             LocalDateTime timestamp2 = timestamp.plusHours(1);
@@ -117,7 +112,7 @@ public class ParkingStationModel implements Model {
     }
 
 
-    public List<DataPoint> getDataPoints(String station) throws Exception {
+    public List<DataPoint> getDataPoints() {
         List<DataPoint> deleteSome = new ArrayList<>();
         for(DataPoint aPoint : this.listOfPoints){
             if(aPoint.timestamp.isAfter(LocalDateTime.now().minusDays(7))){

@@ -1,5 +1,4 @@
 package ParkingBuddy.website;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +53,6 @@ public class ParkingBuddyController{
         return "redirect:/chart?station=" + station + "&date=" + date;
     }
 
-    //@PostMapping("/chart")
-    //public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
-    //    return "redirect:/chart?station=" + station + "&date=" + date;
-    //}
-
-
     @GetMapping("/api/stationData")
     @ResponseBody
     public ParkingStation getStationData(@RequestParam String name) {
@@ -88,7 +81,7 @@ public class ParkingBuddyController{
     @ResponseBody
     public List<DataPoint> getDataPoints() throws Exception {
         ParkingStationModel predModel = new ParkingStationModel(stationName);
-        return predModel.getDataPoints(stationName);
+        return predModel.getDataPoints();
     }
 
     @GetMapping("/api/prediction")
@@ -97,70 +90,8 @@ public class ParkingBuddyController{
         ParkingStationModel predModel = new ParkingStationModel(stationName);
         String[] dates = predictionDate.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
-        List<DataPoint> prediction = predModel.getPrediction(dateForPrediction);
-        return prediction;
+        return predModel.getPrediction(dateForPrediction);
     }
-
-
-//
-//    @GetMapping("/chart")
-//    public String getChart(@RequestParam String station, @RequestParam String date, Model model) throws Exception {
-//        ParkingStationModel predModel = new ParkingStationModel(station);
-//        List<DataPoint> dataPoints = predModel.getDataPoints(station);
-//        String[] dates =date.split("-");
-//        LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
-//        List<DataPoint> prediction = predModel.getPrediction(dateForPrediction);
-//        System.out.println(prediction);
-//        model.addAttribute("prediction", prediction);
-//        model.addAttribute("dataPoints", dataPoints);
-//        model.addAttribute("station", station);
-//        model.addAttribute("date", date);
-//        return "chart";
-//    }
-
-//    @GetMapping("/chart")
-//    public String getChart(@RequestParam String station,
-//                           @RequestParam String date,
-//                           Model model) throws IOException {
-//
-//        model.addAttribute("dataPoints", dataPoints);
-//        model.addAttribute("station", station);
-//        model.addAttribute("date", date);
-//
-//        return "chart";
-//    }
-//}
-
-
-
-//    @GetMapping("/")
-//    public String home() {
-//        return "redirect:/hello"; //opens home.html
-//    }
-//    
-//    //Tutorial - Send information to the page
-//    @GetMapping("/hello")
-//    public String hello(Model model) {
-//        model.addAttribute("hello", new HelloWorld());
-//        return "home";
-//    }
-//
-//    // Tutorial - Get information from page
-//    @PostMapping("/hello")
-//    public String handleTasks(@RequestParam String code,
-//                              Model model) {
-//        System.out.println("Received code: " + code);
-//        model.addAttribute("hello", new HelloWorld());
-//        return "home";
-//    }
-
-
-    //shows how to display a graph
-//    @GetMapping("/")
-//    public String home() {
-//        return "redirect:/chart"; //opens home.html
-//    }
-//
 }
 
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,7 +26,11 @@
                 <div class="card-body">
                     <div id="prediction" style="min-width: 100%; height: 400px;"></div>
                 </div>
-                <br>
+            </div>
+
+            <br>
+
+            <div class="card shadow rounded-4">
                 <div class="card-body">
                     <div id="chart" style="min-width: 100%; height: 400px;"></div>
                 </div>
@@ -35,47 +39,6 @@
 
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-
-                // Fetch and render chart
-                fetch('/api/dataPoints' )
-                    .then(response => response.json())
-                    .then(dataPoints => {
-                        Highcharts.chart('chart', {
-                            title: { text: 'Last 7 days trend' },
-                            xAxis: {
-                                categories: dataPoints.map(point => point.timestamp)
-                            },
-                            yAxis: { title: { text: 'Value' }},
-                            series: [{
-                                type: 'line',
-                                name: 'Line 1',
-                                data: dataPoints.map(point => point.freeSlots)
-                            }]
-                        });
-                    }).catch(error => console.error('Error displaying history chart:', error));
-
-                // Fetch and render table
-                fetch('/api/prediction' )
-                    .then(response => response.json())
-                    .then(dataPoints => {
-                        Highcharts.chart('prediction', {
-                            title: { text: 'Prediction' },
-                            xAxis: {
-                                categories: dataPoints.map(point => point.timestamp)
-                            },
-                            yAxis: { title: { text: 'Value' }},
-                            series: [{
-                                type: 'line',
-                                name: 'Line 1',
-                                data: dataPoints.map(point => point.freeSlots)
-                            }]
-                        });
-                    }).catch(error => console.error('Error displaying prediction chart:', error));
-            });
-        </script>
-
         <script th:src="@{/js/script.js}"></script>
     </body>
 </html>
