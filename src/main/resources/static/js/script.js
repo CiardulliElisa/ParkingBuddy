@@ -169,7 +169,7 @@ function calculateTimeAgo(timestamp) {
     }
 }
 
-// Run on DOM ready
+// Run when DOM ready
 function init() {
     initializeMap();
     handleDropdownChange();

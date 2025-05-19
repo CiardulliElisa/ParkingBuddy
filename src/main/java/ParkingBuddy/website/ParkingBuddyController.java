@@ -22,17 +22,30 @@ import ParkingBuddy.dataGetter.ParkingStation;
 @Controller
 public class ParkingBuddyController{
     private final ChartService chartService = new ChartService();
-    private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
-    private final Set<String> allMunicipalities = ParkingData.getAllMunicipalties();
+    private Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+    private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
 
-	@GetMapping("/")
-    public String home(Model model) {
+    @GetMapping("/")
+    public String home(@RequestParam(required = false) String municipality, Model model) {
+
         model.addAttribute("allMunicipalities", allMunicipalities);
-        model.addAttribute("allStations", allStations);
+
+        if (municipality != null && !municipality.isEmpty()) {
+            Set<ParkingStation> filteredStations = ParkingData.getLatestByMunicipality(municipality);
+            model.addAttribute("allStations", filteredStations);
+            model.addAttribute("selectedMunicipality", municipality);
+        } else {
+            model.addAttribute("allStations", allStations);
+        }
         return "home";
     }
 
-    @PostMapping("/home")
+    @PostMapping("/municipality")
+    public String municipalitySelection(@RequestParam String municipality) {
+        return "redirect:/?municipality=" + municipality;
+    }
+
+    @PostMapping("/chart")
     public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
         return "redirect:/chart?station=" + station + "&date=" + date;
     }
@@ -45,7 +58,6 @@ public class ParkingBuddyController{
         model.addAttribute("dataPoints", dataPoints);
         model.addAttribute("station", station);
         model.addAttribute("date", date);
-
         return "chart";
     }
 

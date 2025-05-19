@@ -134,7 +134,7 @@ public class ParkingData extends GetData {
         return stations;
     }
 
-    public static Set<String> getAllMunicipalties() {
+    public static Set<String> getAllMunicipalities() {
         String url = "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
                 + "&where=tname.eq.free"
@@ -149,6 +149,7 @@ public class ParkingData extends GetData {
 
             for (JsonNode entry : dataArray) {
                 String municipality = entry.path("smetadata.municipality").asText(null);
+                municipality = municipality.split("[ -]")[0];
                 municipalities.add(municipality);
             }
         } catch (Exception e) {
@@ -228,9 +229,5 @@ public class ParkingData extends GetData {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(getAllMunicipalties());
     }
 }

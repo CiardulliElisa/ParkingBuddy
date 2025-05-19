@@ -34,11 +34,12 @@
                     <div class="card-body">
 
                         <div class="mt-3 p-0">
-                            <form id="municipalityForm" action="#" method="post">
+                            <form id="municipalityForm" action="/municipality" method="post">
                                 <div>
                                     <div th:each="municipality : ${allMunicipalities}" class="form-check form-check-inline small">
                                         <input class="form-check-input" type="radio" th:id="${municipality}" th:name="municipality" th:value="${municipality}"
-                                               onchange="document.getElementById('municipalityForm').submit()" />
+                                               onchange="document.getElementById('municipalityForm').submit()"
+                                               th:checked="${municipality == selectedMunicipality}"/>
                                         <label class="form-check-label" th:for="${municipality}" th:text="${municipality}"></label>
                                     </div>
                                 </div>
