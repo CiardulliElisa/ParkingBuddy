@@ -24,7 +24,7 @@ public class ParkingStationModel implements Model {
      private List<DataPoint> pointsToList(ParkingStation parkingStation) {
          ArrayList<Integer> freeSpots = parkingStation.getFree_spots();
          ArrayList<LocalDateTime> time = parkingStation.getTimestamps();
-         List<DataPoint> dataPoints = new ArrayList<DataPoint>();
+         List<DataPoint> dataPoints = new ArrayList<>();
          for(int count = 0; count < parkingStation.getFree_spots().size(); count++) {
              DataPoint aPoint = new DataPoint(time.get(count), freeSpots.get(count));
              dataPoints.add(aPoint);
@@ -59,6 +59,7 @@ public class ParkingStationModel implements Model {
              datasetStructure.add(instance);
          }
 
+         System.out.println("Model is done");
          this.model = new RandomForest();
          model.buildClassifier(datasetStructure);
      }
@@ -77,6 +78,7 @@ public class ParkingStationModel implements Model {
              newList.add(new DataPoint(iterator,(int) Math.round(model.classifyInstance(futureInstance))));
          }
 
+         System.out.println("Prediction is done");
          return newList;
      }
 

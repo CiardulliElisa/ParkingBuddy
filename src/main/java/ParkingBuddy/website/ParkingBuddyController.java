@@ -20,8 +20,6 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
-    private static LocalDateTime dateForPrediction;
-    private static String stationName;
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
 
 	@GetMapping("/")
@@ -32,29 +30,16 @@ public class ParkingBuddyController{
 
     @PostMapping("/home")
     public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
-        String[] dates =date.split("-");
-        dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
         model.addAttribute("stationNames", allStations);
 
         return "redirect:/chart?station=" + station + "&date=" + date;
     }
 
-    @GetMapping("/chart")
-    public String getChart(@RequestParam String station,
-                           @RequestParam String date,
-                           Model model) throws IOException {
 
-        model.addAttribute("dataPoints", dataPoints);
-        model.addAttribute("station", station);
-        model.addAttribute("date", date);
-
-        return "chart";
-    }
 
     @GetMapping("/api/stationData")
     @ResponseBody
     public ParkingStation getStationData(@RequestParam String name) {
-        stationName = name;
         Set<ParkingStation> stations = ParkingData.findLatestData(name);
         return stations.stream().findFirst().orElse(null);
     }
@@ -70,22 +55,32 @@ public class ParkingBuddyController{
     }
 
 
-//shows how to display a graph
-//    @GetMapping("/")
-//    public String home() {
-//        return "redirect:/chart"; //opens home.html
-//    }
-//
     @GetMapping("/chart")
-    public String getChart(Model model) throws Exception {
-        ParkingStationModel predModel = new ParkingStationModel(stationName);
-        List<DataPoint> dataPoints = predModel.getDataPoints(stationName);
+    public String getChart(@RequestParam String station, @RequestParam String date, Model model) throws Exception {
+        ParkingStationModel predModel = new ParkingStationModel(station);
+        List<DataPoint> dataPoints = predModel.getDataPoints(station);
+        String[] dates =date.split("-");
+        LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
         List<DataPoint> prediction = predModel.getPrediction(dateForPrediction);
+        System.out.println(prediction);
         model.addAttribute("prediction", prediction);
         model.addAttribute("dataPoints", dataPoints);
-        model.addAttribute("stationNames", allStations);
+        model.addAttribute("station", station);
+        model.addAttribute("date", date);
         return "chart";
     }
+
+//    @GetMapping("/chart")
+//    public String getChart(@RequestParam String station,
+//                           @RequestParam String date,
+//                           Model model) throws IOException {
+//
+//        model.addAttribute("dataPoints", dataPoints);
+//        model.addAttribute("station", station);
+//        model.addAttribute("date", date);
+//
+//        return "chart";
+//    }
 //}
 
 
@@ -110,6 +105,14 @@ public class ParkingBuddyController{
 //        model.addAttribute("hello", new HelloWorld());
 //        return "home";
 //    }
+
+
+    //shows how to display a graph
+//    @GetMapping("/")
+//    public String home() {
+//        return "redirect:/chart"; //opens home.html
+//    }
+//
 }
 
 
