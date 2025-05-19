@@ -90,7 +90,6 @@ function handleDropdownChange() {
                 if (data.coordinates) {
                     changeMap(data.coordinates.lat, data.coordinates.lng);
                 }
-
                 if (data && data.timestamps && data.timestamps.length > 0 && data.free_spots && data.free_spots.length > 0) {
                     displayStationData(data);
                 } else {
