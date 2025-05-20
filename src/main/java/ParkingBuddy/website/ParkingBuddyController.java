@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ParkingBuddy.Prediction.ParkingStationModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ParkingBuddy.Prediction.DataPoint;
+import ParkingBuddy.Prediction.ParkingStationModel;
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
@@ -24,6 +27,8 @@ public class ParkingBuddyController{
     private static String predictionDate = "";
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
+    @Autowired
+    private SaveFilesMidnight saveFilesMidnight;
 
     @GetMapping("/")
     public String home(@RequestParam(required = false) String municipality, Model model) {
@@ -93,6 +98,18 @@ public class ParkingBuddyController{
         String[] dates = predictionDate.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
         return predModel.getPrediction(dateForPrediction);
+    }
+    
+    @ResponseBody
+    @GetMapping("/run-job")
+    public ResponseEntity<String> runJob() {
+        try {
+            saveFilesMidnight.runAtMidnight();
+            return ResponseEntity.ok("Job successfully executed");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("FError while executing the job: " + e.getMessage());
+        }
     }
 }
 
