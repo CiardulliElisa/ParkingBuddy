@@ -1,14 +1,32 @@
 let map;
+let points = [];
 
 // Initialize the map with a center and zoom level
 function initializeMap() {
-    map = L.map('map').setView([46.638780, 11.350111], 9);
+   const savedCenter = JSON.parse(localStorage.getItem('mapCenter'));
+    const savedZoom = parseInt(localStorage.getItem('mapZoom'), 10);
+
+    const defaultCenter = [46.638780, 11.350111];
+    const defaultZoom = 9;
+
+    const center = (savedCenter && savedCenter.length === 2) ? savedCenter : defaultCenter;
+    const zoom = (!isNaN(savedZoom)) ? savedZoom : defaultZoom;
+
+    map = L.map('map').setView(center, zoom);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
     }).addTo(map);
 
     loadMarkers(map);
+
+    //saves current zoom level and center
+    map.on('moveend zoomend', () => {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        localStorage.setItem('mapCenter', JSON.stringify([center.lat, center.lng]));
+        localStorage.setItem('mapZoom', zoom);
+    });
 }
 
 // Zooms to a parking station when selected
@@ -21,16 +39,49 @@ function changeMap(lat, lng) {
     }
 }
 
+// Zooms to a municipality when selected
+function changeMapMunicipality() {
+    let dropdown = document.getElementById('parkingDropdown');
+    if (!dropdown) {
+        console.warn('Dropdown not found');
+        return;
+    }
+    let dropdownStationNames = Array.from(dropdown.options)
+        .map(option => option.value)
+        .filter(name => name);
+
+    let filteredPoints = points.filter(p => dropdownStationNames.includes(p.name));
+    if (filteredPoints.length == 0) {
+        console.warn('No matching points found in dropdown.');
+        return;
+    }
+    const avgLat = filteredPoints.reduce((sum, p) => sum + p.lat, 0) / filteredPoints.length;
+    const avgLng = filteredPoints.reduce((sum, p) => sum + p.lng, 0) / filteredPoints.length;
+    
+    if (map && typeof map.flyTo === 'function') {
+        map.flyTo([avgLat, avgLng], 13, {
+            animate: true,
+            duration: 2
+        });
+    }
+}
+
 // Load markers on the map from the /api/points endpoint
 function loadMarkers(map) {
     fetch('/api/points')
         .then(response => response.json())
         .then(data => {
+            points = [];
             Object.entries(data).forEach(([name, point]) => {
                 if (point.lat && point.lng) {
+                    points.push({ name, lat: point.lat, lng: point.lng });
                     createMarker(map, name, point);
                 }
             });
+            let selectedRadio = document.querySelector('input[name="municipality"]:checked');
+            if (selectedRadio) {
+                changeMapMunicipality();
+            }
         })
         .catch(error => console.error('Error loading markers:', error));
 }
@@ -48,13 +99,23 @@ function createMarker(map, name, point) {
 // Set the dropdown to the value of the clicked marker
 function setDropdownValue(stationName) {
     let dropdown = document.getElementById('parkingDropdown');
+    let found = false;
     for (let i = 0; i < dropdown.options.length; i++) {
         if (dropdown.options[i].value === stationName) {
             dropdown.selectedIndex = i;
+            found = true;
             break;
         }
     }
-    dropdown.dispatchEvent(new Event('change'));
+    //makes sure, that you can click on stations outside of municipality, too
+    if (found) {
+        dropdown.dispatchEvent(new Event('change'));
+    } else {
+        localStorage.setItem('pendingStation', stationName);
+
+        const baseUrl = window.location.origin + window.location.pathname;
+        window.location.href = baseUrl;
+    }
 }
 
 // Handle station dropdown changes by adding event listener
@@ -168,12 +229,27 @@ function calculateTimeAgo(timestamp) {
     }
 }
 
-// Run when DOM ready
-function init() {
+// Wait for the DOM to be fully loaded before running the scripts
+window.addEventListener('DOMContentLoaded', () => {
     initializeMap();
     handleDropdownChange();
-}
 
-// Wait for the DOM to be fully loaded before running the scripts
-document.addEventListener('DOMContentLoaded', init);
+    const header = document.getElementById('header-clickable');
+    if (header) {
+        header.addEventListener('click', () => {
+            localStorage.removeItem('mapCenter');
+            localStorage.removeItem('mapZoom');
+            window.location.href = '/';
+        });
+    }
 
+    const pendingStation = localStorage.getItem('pendingStation');
+    if (pendingStation) {
+        localStorage.removeItem('pendingStation');
+        setDropdownValue(pendingStation);
+    }
+});
+
+window.addEventListener('load', () => {
+    loadMarkers(map);
+});

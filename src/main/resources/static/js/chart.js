@@ -44,4 +44,15 @@ function loadCharts() {
         }).catch(error => console.error('Error displaying prediction chart:', error));
 }
 
-document.addEventListener('DOMContentLoaded', loadCharts);
+window.addEventListener('DOMContentLoaded', () => {
+    loadCharts();
+
+    const header = document.getElementById('header-clickable');
+    if (header) {
+        header.addEventListener('click', () => {
+            localStorage.removeItem('mapCenter');
+            localStorage.removeItem('mapZoom');
+            window.location.href = '/';
+        });
+    }
+});
