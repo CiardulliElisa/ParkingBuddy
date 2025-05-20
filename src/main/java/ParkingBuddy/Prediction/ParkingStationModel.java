@@ -30,6 +30,7 @@ public class ParkingStationModel implements Model {
      }
 
      public ParkingStationModel(String station) throws Exception {
+         System.out.println("Loading parking station data for: '" + station + "'");
          String filepath = genFilePathPS(station);
          CSVFile csv = new CSVFile();
          ParkingStation parkingStation = (ParkingStation) csv.readData(filepath);
@@ -84,7 +85,8 @@ public class ParkingStationModel implements Model {
       * */
      private static String genFilePathPS(String station) {
          String folder = "./historicalData/";
-         return folder + station.replace("/", "-") + ".csv";
+         System.out.println( folder + station.replace("/", "-") + ".csv");
+         return  folder + station.replace("/", "-") + ".csv";
      }
 
     public static List<DataPoint> reduceDataPoints(List<DataPoint> listOfPoints) {

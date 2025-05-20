@@ -80,6 +80,7 @@ public class ParkingBuddyController{
     @GetMapping("/api/dataPoints")
     @ResponseBody
     public List<DataPoint> getDataPoints() throws Exception {
+        System.out.println("get Data Points for = " + stationName);
         ParkingStationModel predModel = new ParkingStationModel(stationName);
         return predModel.getDataPoints();
     }
@@ -87,6 +88,7 @@ public class ParkingBuddyController{
     @GetMapping("/api/prediction")
     @ResponseBody
     public List<DataPoint> getPrediction() throws Exception {
+        System.out.println("get preditcion for: " + stationName);
         ParkingStationModel predModel = new ParkingStationModel(stationName);
         String[] dates = predictionDate.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
