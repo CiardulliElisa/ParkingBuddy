@@ -1,6 +1,7 @@
 package ParkingBuddy.dataStorage;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,7 +13,11 @@ public class HistoricalData{
 	private static final Set<ParkingStation> allStations;
 
     static {
-        allStations = ParkingData.findAllLatestData();
+        try {
+            allStations = ParkingData.findAllLatestData();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) throws IOException {

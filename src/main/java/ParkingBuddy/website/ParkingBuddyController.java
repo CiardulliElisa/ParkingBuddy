@@ -1,5 +1,6 @@
 package ParkingBuddy.website;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class ParkingBuddyController{
     }
 
     @GetMapping("/")
-    public String home(@RequestParam(required = false) String municipality, Model model) {
+    public String home(@RequestParam(required = false) String municipality, Model model) throws MalformedURLException {
 
         model.addAttribute("allMunicipalities", allMunicipalities);
 
@@ -60,8 +61,8 @@ public class ParkingBuddyController{
 
     @GetMapping("/api/stationData")
     @ResponseBody
-    public ParkingStation getStationData(@RequestParam String name) {
-        Set<ParkingStation> stations = ParkingData.findLatestData(name);
+    public ParkingStation getStationData(@RequestParam String name) throws MalformedURLException {
+        Set<ParkingStation> stations = ParkingData.findStationLatestData(name);
         return stations.stream().findFirst().orElse(null);
     }
 
