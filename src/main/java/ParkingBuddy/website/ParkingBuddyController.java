@@ -62,7 +62,7 @@ public class ParkingBuddyController{
     @GetMapping("/api/stationData")
     @ResponseBody
     public ParkingStation getStationData(@RequestParam String name) throws MalformedURLException {
-        Set<ParkingStation> stations = ParkingData.findStationLatestData(name);
+        Set<ParkingStation> stations = ParkingData.getStationLatestData(name);
         return stations.stream().findFirst().orElse(null);
     }
 

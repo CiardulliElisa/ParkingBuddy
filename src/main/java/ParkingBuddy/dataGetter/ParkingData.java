@@ -31,9 +31,9 @@ public class ParkingData extends GetData {
 
         JsonNode firstElement = dataArray.get(0);
 
-        String name = firstElement.get("sname").asText();
-        String municipality = firstElement.get("smetadata.municipality").asText();
-        int capacity = firstElement.get("smetadata.capacity").asInt();
+        String name = firstElement.get("sname").asText("Unknown");
+        String municipality = firstElement.get("smetadata.municipality").asText("Unknown");
+        int capacity = firstElement.get("smetadata.capacity").asInt(-1);
 
         Coordinate coordinates = parseCoordinates(firstElement);
 
@@ -44,12 +44,24 @@ public class ParkingData extends GetData {
         return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
     }
 
+    private static JsonNode fetchJsonArray(String jsonResponse) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(jsonResponse);
+        JsonNode dataArray = rootNode.get("data");
+        if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
+            throw new IllegalArgumentException("No data available in JSON response.");
+        }
+        return dataArray;
+    }
+
     private static Coordinate parseCoordinates(JsonNode node) {
-        System.out.println("PArsing coordinates");
-        JsonNode coordinateNode = node.get("scoordinate");
-        double longitude = coordinateNode.get("x").asDouble();
-        double latitude = coordinateNode.get("y").asDouble();
-        return new Coordinate (longitude, latitude);
+        JsonNode coordinateNode = node.has("scoordinate") ? node.get("scoordinate") : null;
+        if(!coordinateNode.isNull() && coordinateNode.has("x") && coordinateNode.has("y")) {
+            double longitude = coordinateNode.get("x").asDouble();
+            double latitude = coordinateNode.get("y").asDouble();
+            return new Coordinate (longitude, latitude);
+        }
+        else return null;
     }
 
     private static Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> parseTimestampValues(JsonNode dataArray) {
@@ -59,12 +71,12 @@ public class ParkingData extends GetData {
         ArrayList<Integer> free_spots = new ArrayList<>();
 
         for (JsonNode node : dataArray) {
-            String timestampStr = node.get("_timestamp").asText();
+            String timestampStr = node.has("_timestamp") ? node.get("_timestamp").asText() : null;
             if (timestampStr == null || timestampStr.isEmpty()) {
                 continue;
             }
             LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
-            int value = node.get("mvalue").asInt();
+            int value = node.has("mvalue") ?  node.get("mvalue").asInt() : -1;
 
             timestamps.add(timestamp);
             free_spots.add(value);
@@ -111,16 +123,6 @@ public class ParkingData extends GetData {
         return stations;
     }
 
-    private static JsonNode fetchJsonArray(String jsonResponse) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(jsonResponse);
-        JsonNode dataArray = rootNode.get("data");
-        if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
-            throw new IllegalArgumentException("No data available in JSON response.");
-        }
-        return dataArray;
-    }
-
     public static Set<String> getAllMunicipalities() throws MalformedURLException {
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
@@ -145,7 +147,7 @@ public class ParkingData extends GetData {
         return municipalities;
     }
 
-    public static Set<ParkingStation> findStationLatestData(String nameInput) throws MalformedURLException {
+    public static Set<ParkingStation> getStationLatestData(String nameInput) throws MalformedURLException {
 
         String encodedName = URLEncoder.encode(nameInput, StandardCharsets.UTF_8).replace(".", "%2E");;
 

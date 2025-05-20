@@ -12,7 +12,6 @@ import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 import ParkingBuddy.dataStorage.HistoricalData;
 
-/*
 @Component
 public class SaveFilesMidnight implements CommandLineRunner{
 
@@ -24,4 +23,4 @@ public class SaveFilesMidnight implements CommandLineRunner{
         Set<ParkingStation> allStations = ParkingData.findAllLatestData();
         HistoricalData.saveFiles(startDate, endDate, allStations);
 	}
-}*/
+}
