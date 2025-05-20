@@ -17,33 +17,10 @@ public class ParkingData extends GetData {
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in
     // @param code - the code of the parking lot we are interested in
-    public static ParkingStation getHistoricalData(LocalDateTime now, LocalDateTime aYearAgo, String name) throws IOException {
-        String accessToken = generateAccessToken();
-
-        try {
-            URL apiUrl = new URL(generateHistoricalURL(now, aYearAgo, name));
-            HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Bearer " + accessToken);
-
-            int responseCode = connection.getResponseCode();
-
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Scanner scanner = new Scanner(connection.getInputStream());
-                    StringBuilder response = new StringBuilder();
-                    while (scanner.hasNextLine()) {
-                        response.append(scanner.nextLine());
-                }
-                scanner.close();
-                return parseParkingStationData(response.toString());
-
-            } else {
-                throw new IOException("Response status: " + responseCode);
-            }
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-        return null;
+    public static ParkingStation getHistoricalData(LocalDateTime now, LocalDateTime before, String name) throws IOException {
+        URL url = new URL(generateHistoricalURL(now, before, name));
+        String response = readData(url, true);
+        return parseParkingStationData(response);
     }
 
     // Method to parse JSON response and create a ParkingStationData object

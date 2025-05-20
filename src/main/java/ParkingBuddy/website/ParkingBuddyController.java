@@ -1,4 +1,5 @@
 package ParkingBuddy.website;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,14 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
+
     private static String stationName = "";
     private static String predictionDate = "";
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
+
+    public ParkingBuddyController() throws IOException {
+    }
 
     @GetMapping("/")
     public String home(@RequestParam(required = false) String municipality, Model model) {

@@ -9,9 +9,13 @@ import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 
 public class HistoricalData{
-	private static final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+	private static final Set<ParkingStation> allStations;
 
-	public static void main(String[] args) throws IOException {
+    static {
+        allStations = ParkingData.findAllLatestData();
+    }
+
+    public static void main(String[] args) throws IOException {
         LocalDateTime startDate = LocalDateTime.now().minusYears(1);
         LocalDateTime endDate = LocalDateTime.now();
         saveFiles(startDate, endDate, allStations);
@@ -20,6 +24,7 @@ public class HistoricalData{
 	public static void saveFiles(LocalDateTime startDate, LocalDateTime endDate, Set<ParkingStation> stations) throws IOException {
 		for(String name: getLatestObjects(stations)) {
 			try {
+					System.out.println("Current station: " + name);
 					ParkingStation save = ParkingData.getHistoricalData(startDate, endDate, name);
 					CSVFile csvFile = new CSVFile();
 					if(save != null) {
