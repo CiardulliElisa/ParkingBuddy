@@ -1,6 +1,7 @@
 package ParkingBuddy.dataStorage;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,9 +10,17 @@ import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 
 public class HistoricalData{
-	private static final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+	private static final Set<ParkingStation> allStations;
 
-	public static void main(String[] args) throws IOException {
+    static {
+        try {
+            allStations = ParkingData.findAllLatestData();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
         LocalDateTime startDate = LocalDateTime.now().minusYears(1);
         LocalDateTime endDate = LocalDateTime.now();
         saveFiles(startDate, endDate, allStations);
@@ -20,6 +29,7 @@ public class HistoricalData{
 	public static void saveFiles(LocalDateTime startDate, LocalDateTime endDate, Set<ParkingStation> stations) throws IOException {
 		for(String name: getLatestObjects(stations)) {
 			try {
+					System.out.println("Current station: " + name);
 					ParkingStation save = ParkingData.getHistoricalData(startDate, endDate, name);
 					CSVFile csvFile = new CSVFile();
 					if(save != null) {

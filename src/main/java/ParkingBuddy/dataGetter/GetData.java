@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.time.LocalDateTime;
+import java.util.Scanner;
 
 public abstract class GetData {
 
@@ -15,9 +15,42 @@ public abstract class GetData {
     // Returns ParkingStation - all data for a certain parking station for a certain interval of time
     // @param startTime and endTime - start and end of the interval of time we are interested in
     // @param code - the code of the parking lot we are interested in
-    public static ParkingStation getData(LocalDateTime startDate, LocalDateTime endDate, String name) throws IOException {
+    public static String readData(URL url, Boolean historical) throws IOException {
+
+        String accessToken = null;
+
+        if(historical) {
+            accessToken= generateAccessToken();
+        }
+
+        try {
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            if(historical) {
+                connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+            }
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                Scanner scanner = new Scanner(connection.getInputStream());
+                StringBuilder response = new StringBuilder();
+                while (scanner.hasNextLine()) {
+                    response.append(scanner.nextLine());
+                }
+                scanner.close();
+                return response.toString();
+            } else {
+                throw new IOException("Response status: " + responseCode);
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
         return null;
     }
+
+
 
     // Returns an access token that is used to retrieve data for 48 hours
     public static String generateAccessToken() throws IOException {

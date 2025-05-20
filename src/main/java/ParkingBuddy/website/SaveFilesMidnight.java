@@ -10,7 +10,6 @@ import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 import ParkingBuddy.dataStorage.HistoricalData;
 
-
 @Component
 public class SaveFilesMidnight {
 	
