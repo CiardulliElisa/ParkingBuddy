@@ -37,7 +37,7 @@ public class ParkingData extends GetData {
 
         Coordinate coordinates = parseCoordinates(firstElement);
 
-        Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> timestamps_values = parseTimestampValues(firstElement);
+        Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> timestamps_values = parseTimestampValues(dataArray);
         ArrayList<LocalDateTime> timestamps = timestamps_values._1();
         ArrayList<Integer> free_spots = timestamps_values._2();
 
@@ -76,7 +76,7 @@ public class ParkingData extends GetData {
                 continue;
             }
             LocalDateTime timestamp = LocalDateTime.parse(timestampStr, formatter);
-            int value = node.has("mvalue") ?  node.get("mvalue").asInt() : -1;
+            int value = node.has("mvalue") ? node.get("mvalue").asInt() : -1;
 
             timestamps.add(timestamp);
             free_spots.add(value);
