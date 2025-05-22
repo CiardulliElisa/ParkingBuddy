@@ -25,9 +25,6 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
-
-    private static String stationName = "";
-    private static String predictionDate = "";
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
     @Autowired
@@ -57,11 +54,17 @@ public class ParkingBuddyController{
     }
 
     @PostMapping("/home")
-    public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
-        stationName = station;
-        predictionDate = date;
+    public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) throws MalformedURLException {
         model.addAttribute("stationNames", allStations);
-        return "redirect:/chart?station=" + station + "&date=" + date;
+        int capacity = -1;
+        Set<ParkingStation> myStation = ParkingData.getStationLatestData(station);
+        for(ParkingStation s : myStation) {
+            if(s.getName().equals(station)) {
+                capacity = s.getCapacity();
+                break;
+            }
+        }
+        return "redirect:/chart?station=" + station + "&date=" + date + "&capacity=" + capacity;
     }
 
     @GetMapping("/api/stationData")
@@ -88,23 +91,28 @@ public class ParkingBuddyController{
         return "chart";
     }
 
+
     @GetMapping("/api/dataPoints")
     @ResponseBody
-    public List<DataPoint> getDataPoints() throws Exception {
-        System.out.println("get Data Points for = " + stationName);
-        ParkingStationModel predModel = new ParkingStationModel(stationName);
+    public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
+        System.out.println("get Data Points for = " + station);
+        ParkingStationModel predModel = new ParkingStationModel(station);
         return predModel.getDataPoints();
     }
 
     @GetMapping("/api/prediction")
     @ResponseBody
-    public List<DataPoint> getPrediction() throws Exception {
-        System.out.println("get preditcion for: " + stationName);
-        ParkingStationModel predModel = new ParkingStationModel(stationName);
-        String[] dates = predictionDate.split("-");
-        LocalDateTime dateForPrediction = LocalDateTime.of(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0);
+    public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date, @RequestParam String capacity) throws Exception {
+        System.out.println("get prediction for: " + station + " at " + date);
+        ParkingStationModel predModel = new ParkingStationModel(station);
+        String[] dates = date.split("-");
+        LocalDateTime dateForPrediction = LocalDateTime.of(
+                Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0
+        );
         return predModel.getPrediction(dateForPrediction);
     }
+
+
     
     @ResponseBody
     @GetMapping("/run-job")

@@ -24,7 +24,14 @@
             <!-- Chart Container -->
             <div class="card shadow rounded-4">
                 <div class="card-body">
-                    <div id="prediction" style="min-width: 100%; height: 400px;"></div>
+                    <div id="prediction-loading" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 100%; height: 400px;">
+                        <video autoplay muted loop style="height:80%">
+                            <source src="/image/263969_small.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <a>Your data needs some time to be processed.</a>
+                    </div>
+                    <div id="prediction" style="display: none; min-width: 100%; height: 400px;"></div>
                 </div>
             </div>
 
@@ -32,13 +39,28 @@
 
             <div class="card shadow rounded-4">
                 <div class="card-body">
-                    <div id="chart" style="min-width: 100%; height: 400px;"></div>
+                    <div id="chart-loading" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 100%; height: 400px;">
+                        <video autoplay muted loop style="height:80%">
+                            <source src="/image/263969_small.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <a>Your data needs some time to be processed.</a>
+                    </div>
+                    <div id="chart" style="display: none; min-width: 100%; height: 400px;"></div>
                 </div>
             </div>
+
+            <footer class="bg-text-white text-center" style="background-color:#28a745; color:white; margin-top: 30px; height:50px">
+                <a>This website uses public data from the Open Data Hub.</a>
+            </footer>
         </main>
+
+
+
 
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script th:src="@{/js/chart.js}"></script>
+
     </body>
 </html>

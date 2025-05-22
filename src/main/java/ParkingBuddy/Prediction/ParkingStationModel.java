@@ -73,7 +73,7 @@ public class ParkingStationModel implements Model {
      public List<DataPoint> getPrediction(LocalDateTime futureDateTime) throws Exception {
          List<DataPoint> newList = new ArrayList<>();
          for(int count = 0; count < 24; count++) {
-             LocalDateTime iterator = LocalDateTime.of(futureDateTime.getYear(), futureDateTime.getMonthValue(), futureDateTime.getDayOfMonth(), (23-count), 0);
+             LocalDateTime iterator = LocalDateTime.of(futureDateTime.getYear(), futureDateTime.getMonthValue(), futureDateTime.getDayOfMonth(), (count), 0);
              Instance futureInstance = new DenseInstance(4);
              futureInstance.setDataset(datasetStructure);
              futureInstance.setValue(0, iterator.getHour());
