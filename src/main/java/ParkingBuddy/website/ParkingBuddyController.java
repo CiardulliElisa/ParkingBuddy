@@ -54,9 +54,17 @@ public class ParkingBuddyController{
     }
 
     @PostMapping("/home")
-    public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) {
+    public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) throws MalformedURLException {
         model.addAttribute("stationNames", allStations);
-        return "redirect:/chart?station=" + station + "&date=" + date;
+        int capacity = -1;
+        Set<ParkingStation> myStation = ParkingData.getStationLatestData(station);
+        for(ParkingStation s : myStation) {
+            if(s.getName().equals(station)) {
+                capacity = s.getCapacity();
+                break;
+            }
+        }
+        return "redirect:/chart?station=" + station + "&date=" + date + "&capacity=" + capacity;
     }
 
     @GetMapping("/api/stationData")
@@ -86,7 +94,7 @@ public class ParkingBuddyController{
 
     @GetMapping("/api/dataPoints")
     @ResponseBody
-    public List<DataPoint> getDataPoints(@RequestParam String station) throws Exception {
+    public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
         System.out.println("get Data Points for = " + station);
         ParkingStationModel predModel = new ParkingStationModel(station);
         return predModel.getDataPoints();
@@ -94,7 +102,7 @@ public class ParkingBuddyController{
 
     @GetMapping("/api/prediction")
     @ResponseBody
-    public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date) throws Exception {
+    public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date, @RequestParam String capacity) throws Exception {
         System.out.println("get prediction for: " + station + " at " + date);
         ParkingStationModel predModel = new ParkingStationModel(station);
         String[] dates = date.split("-");
