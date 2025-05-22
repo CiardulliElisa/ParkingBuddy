@@ -1,14 +1,20 @@
 
 package ParkingBuddy.Prediction;
 
-import ParkingBuddy.dataGetter.ParkingStation;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import ParkingBuddy.dataGetter.ParkingStation;
 import ParkingBuddy.dataStorage.CSVFile;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
-import weka.core.*;
-import java.util.*;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.Instance;
+import weka.core.Instances;
 
 
 
@@ -31,7 +37,8 @@ public class ParkingStationModel implements Model {
 
      public ParkingStationModel(String station) throws Exception {
          System.out.println("Loading parking station data for: '" + station + "'");
-         String filepath = genFilePathPS(station);
+         String filepath = genFilePathPS2(station);
+         System.out.println(filepath);
          CSVFile csv = new CSVFile();
          ParkingStation parkingStation = (ParkingStation) csv.readData(filepath);
          List<DataPoint> historicalData = pointsToList(parkingStation);
@@ -81,12 +88,13 @@ public class ParkingStationModel implements Model {
 
      /*method to generate a uniform name for the files, in which historical parking data is stored
       * input: Parking station to save
-      * Output: String, in which the parking station should be stored
-      * */
-     private static String genFilePathPS(String station) {
-         String folder = "./src/main/resources/historicalData/";
-         System.out.println( folder + station.replace("/", "-") + ".csv");
-         return  folder + station.replace("/", "-") + ".csv";
+      * Output: URL for supabase, where the parking station should be stored
+      * */     
+     private static String genFilePathPS2(String station) {
+    	 String url = "https://kwwvugjyccrpvcbziwfj.supabase.co/storage/v1/object/public/historicaldata/";
+    	 String encoded = URLEncoder.encode(station.replace("/", ""), StandardCharsets.UTF_8);
+    	encoded = encoded.replace("+", "%20");
+    	 return url + encoded + ".csv";
      }
 
     public static List<DataPoint> reduceDataPoints(List<DataPoint> listOfPoints) {
