@@ -1,43 +1,51 @@
-//load the graph content for prediction and 7 days review
+function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
 function loadCharts() {
+    const station = getQueryParam("station");
+    const date = getQueryParam("date");
+
+    if (!station || !date) {
+        console.error("Missing station or date in URL");
+        return;
+    }
+
     Highcharts.setOptions({
-            lang: {
-                decimalPoint: '.',
-                thousandsSep: ','
-            }
-        });
+        lang: {
+            decimalPoint: '.',
+            thousandsSep: ','
+        }
+    });
+
     // Fetch and render chart
-    fetch('/api/dataPoints')
+    fetch(`/api/dataPoints?station=${encodeURIComponent(station)}`)
         .then(response => response.json())
         .then(dataPoints => {
-            console.log('DataPoints:', dataPoints); // <-- Add this
             Highcharts.chart('chart', {
-                title: {text: 'Last 7 days trend'},
-                xAxis: {
-                    categories: dataPoints.map(point => point.timestamp)
-                },
-                yAxis: {title: {text: 'Value'}},
+                title: { text: 'Last 7 days trend' },
+                xAxis: { categories: dataPoints.map(point => point.timestamp) },
+                yAxis: { title: { text: 'Free Slots' }},
                 series: [{
                     type: 'line',
-                    name: 'Line 1',
+                    name: station,
                     data: dataPoints.map(point => point.freeSlots)
                 }]
             });
         }).catch(error => console.error('Error displaying history chart:', error));
 
-    // Fetch and render table
-    fetch('/api/prediction' )
+    // Fetch and render prediction
+    fetch(`/api/prediction?station=${encodeURIComponent(station)}&date=${encodeURIComponent(date)}`)
         .then(response => response.json())
         .then(dataPoints => {
             Highcharts.chart('prediction', {
-                title: {text: 'Prediction'},
-                xAxis: {
-                    categories: dataPoints.map(point => point.timestamp)
-                },
-                yAxis: {title: {text: 'Value'}},
+                title: { text: 'Prediction' },
+                xAxis: { categories: dataPoints.map(point => point.timestamp) },
+                yAxis: { title: { text: 'Free Slots' }},
                 series: [{
                     type: 'line',
-                    name: 'Line 1',
+                    name: station,
                     data: dataPoints.map(point => point.freeSlots)
                 }]
             });
