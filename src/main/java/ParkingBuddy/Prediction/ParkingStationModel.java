@@ -84,7 +84,7 @@ public class ParkingStationModel implements Model {
       * Output: String, in which the parking station should be stored
       * */
      private static String genFilePathPS(String station) {
-         String folder = "./historicalData/";
+         String folder = "./src/main/resources/historicalData/";
          System.out.println( folder + station.replace("/", "-") + ".csv");
          return  folder + station.replace("/", "-") + ".csv";
      }

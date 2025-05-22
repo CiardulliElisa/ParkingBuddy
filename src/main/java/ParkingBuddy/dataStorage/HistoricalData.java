@@ -3,8 +3,11 @@ package ParkingBuddy.dataStorage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.web.client.RestTemplate;
 
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
@@ -24,6 +27,7 @@ public class HistoricalData{
         LocalDateTime startDate = LocalDateTime.now().minusYears(1);
         LocalDateTime endDate = LocalDateTime.now();
         saveFiles(startDate, endDate, allStations);
+
 	}
 
 	public static void saveFiles(LocalDateTime startDate, LocalDateTime endDate, Set<ParkingStation> stations) throws IOException {
@@ -33,7 +37,7 @@ public class HistoricalData{
 					ParkingStation save = ParkingData.getHistoricalData(startDate, endDate, name);
 					CSVFile csvFile = new CSVFile();
 					if(save != null) {
-						String filepath = genFilePathPS(save);
+				    	String filepath = genFilePathPS(save);
 						csvFile.saveData(save, filepath);
 					}
 				} catch (IllegalArgumentException e) {
@@ -47,7 +51,7 @@ public class HistoricalData{
 	 * Output: String, in which the parking station should be stored
 	 * */
 	private static String genFilePathPS(ParkingStation station){
-		String folder = "./historicalData/";
+		String folder = "./src/main/resources/historicalData/";
 		return folder + station.getName().replace("/", "-") + ".csv";
 	}
 
