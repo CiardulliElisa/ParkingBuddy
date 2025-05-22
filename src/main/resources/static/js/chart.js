@@ -33,7 +33,13 @@ function loadCharts() {
                     data: dataPoints.map(point => point.freeSlots)
                 }]
             });
-        }).catch(error => console.error('Error displaying history chart:', error));
+
+            document.getElementById("chart-loading").style.display = "none";
+            document.getElementById("chart").style.display = "block";
+        }).catch(error => {
+        console.error('Error displaying history chart:', error);
+        document.getElementById("chart-loading").innerHTML = "<p style='color:red;'>Failed to load chart data.</p>";
+    })
 
     // Fetch and render prediction
     fetch(`/api/prediction?station=${encodeURIComponent(station)}&date=${encodeURIComponent(date)}`)
@@ -49,7 +55,12 @@ function loadCharts() {
                     data: dataPoints.map(point => point.freeSlots)
                 }]
             });
-        }).catch(error => console.error('Error displaying prediction chart:', error));
+            document.getElementById("prediction-loading").style.display = "none";
+            document.getElementById("prediction").style.display = "block";
+        }).catch(error => {
+        console.error('Error displaying prediction chart:', error);
+        document.getElementById("prediction-loading").innerHTML = "<p style='color:red;'>Failed to load chart data.</p>";
+    })
 }
 
 window.addEventListener('DOMContentLoaded', () => {
