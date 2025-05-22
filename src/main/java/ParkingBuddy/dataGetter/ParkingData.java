@@ -96,7 +96,7 @@ public class ParkingData extends GetData {
                 formatDate(endDate) +
                 "?limit=-1&offset=0&where=sname.eq.%22" +
                 name +
-                "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
+                "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC+2&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
     }
 
     public static Set<ParkingStation> findAllLatestData() throws MalformedURLException {
@@ -126,7 +126,7 @@ public class ParkingData extends GetData {
     public static Set<String> getAllMunicipalities() throws MalformedURLException {
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
-                + "&where=tname.eq.free"
+                + "&where=tname.eq.free&timezone=UTC+2"
                 + "&select=smetadata.municipality");
 
         Set<String> municipalities  = new HashSet<>();
@@ -155,7 +155,7 @@ public class ParkingData extends GetData {
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
                 + "&where=tname.eq.free"
                 + "&where=sname.eq." + encodedName
-                + "&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality");
+                + "&timezone=UTC+2&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality");
 
         Set<ParkingStation> stations = new HashSet<>();
 
@@ -193,7 +193,7 @@ public class ParkingData extends GetData {
 
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
-                + "&where=tname.eq.free"
+                + "&where=tname.eq.free&timezone=UTC+2"
                 + "&where=smetadata.municipality.re." + municipalityInput
                 + "&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality");
         try {
