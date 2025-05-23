@@ -30,10 +30,12 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ParkingBuddyController{
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
+    private final AsyncJobService jobService;
     @Autowired
     private SaveFilesMidnight saveFilesMidnight;
 
-    public ParkingBuddyController() throws IOException {
+    public ParkingBuddyController(AsyncJobService jobService)throws IOException{
+        this.jobService = jobService;
     }
 
     @GetMapping("/")
@@ -115,7 +117,22 @@ public class ParkingBuddyController{
         return predModel.getPrediction(dateForPrediction);
     }
 
+    @PostMapping("/start-job")
+    public String startJob(Model model) {
+        String jobId = jobService.startJob();
+        model.addAttribute("jobId", jobId);
+        return "job_started";
+    }
 
+    @GetMapping("/job-status")
+    @ResponseBody
+    public String getStatus(@RequestParam String jobId) {
+        String status = jobService.getStatus(jobId);
+        if ("NOT_FOUND".equals(status)) {
+            return "Job ID not found.";
+        }
+        return status;
+    }
     
     @ResponseBody
     @GetMapping("/run-job")
@@ -128,24 +145,7 @@ public class ParkingBuddyController{
                                  .body("FError while executing the job: " + e.getMessage());
         }
     }
-    
-    @GetMapping(value = "/long-process", produces = MediaType.TEXT_PLAIN_VALUE)
-    public void longProcess(HttpServletResponse response) throws IOException {
-        response.setContentType("text/plain");
-        PrintWriter writer = response.getWriter();
 
-        for (int i = 0; i < 10; i++) {
-            writer.write("Chunk " + i + "\n");
-            writer.flush();
-            try {
-                Thread.sleep(1000); // simulate work
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                writer.write("Error: interrupted\n");
-                break;
-            }
-        }
-    }
 }
 
 

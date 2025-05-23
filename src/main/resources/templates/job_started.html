@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Job Started</title></head>
+<body>
+    <h2>Job Started</h2>
+    <p>Your job ID: <span th:text="${jobId}"></span></p>
+    <p><a th:href="@{/job-status(jobId=${jobId})}">Check Status</a></p>
+</body>
+</html>
