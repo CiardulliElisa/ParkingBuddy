@@ -26,7 +26,6 @@ public class ModelCacheService {
 	    public void preloadModels() {
 	        for (ParkingStation station : allStations) {
 	            try {
-	                System.out.println("Preloading model for: " + station.getName());
 	                ParkingStationModel model = new ParkingStationModel(station.getName());
 	                modelCache.put(station, model);
 	            } catch (Exception e) {
