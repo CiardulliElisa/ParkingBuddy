@@ -26,15 +26,17 @@ public class ParkingBuddyController{
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
     private final AsyncJobService jobService;
-    private final Map<String, ParkingStationModel> modelCache = new ConcurrentHashMap<>();
+    private final ModelCacheService modelCacheService;
 //    @Autowired
 //    private SaveFilesMidnight saveFilesMidnight;
 
-    public ParkingBuddyController(AsyncJobService jobService)throws MalformedURLException{
+    public ParkingBuddyController(AsyncJobService jobService, ModelCacheService modelCacheService)throws MalformedURLException{
         this.jobService = jobService;
+        this.modelCacheService = modelCacheService;
     }
 //    public ParkingBuddyController()throws IOException{
 //    }
+
 
     @GetMapping("/")
     public String home(@RequestParam(required = false) String municipality, Model model) throws MalformedURLException {
@@ -99,34 +101,22 @@ public class ParkingBuddyController{
     @ResponseBody
     public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
         System.out.println("get Data Points for = " + station);
-        ParkingStationModel predModel = modelCache.computeIfAbsent(station, s -> {
-            try {
-                return new ParkingStationModel(s);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        return predModel.getDataPoints();
+        ParkingStationModel model = modelCacheService.getModel(station);
+        return model.getDataPoints();
     }
 
     @GetMapping("/api/prediction")
     @ResponseBody
     public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date, @RequestParam String capacity) throws Exception {
         System.out.println("get prediction for: " + station + " at " + date);
-        ParkingStationModel predModel = modelCache.computeIfAbsent(station, s -> {
-            try {
-                return new ParkingStationModel(s);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        ParkingStationModel model = modelCacheService.getModel(station);
 
         String[] dates = date.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(
                 Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0
         );
 
-        return predModel.getPrediction(dateForPrediction);
+        return model.getPrediction(dateForPrediction);
     }
 
     @PostMapping("/start-job")

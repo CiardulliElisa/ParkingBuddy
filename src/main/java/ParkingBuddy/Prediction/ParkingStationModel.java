@@ -38,7 +38,6 @@ public class ParkingStationModel implements Model {
      public ParkingStationModel(String station) throws Exception {
          System.out.println("Loading parking station data for: '" + station + "'");
          String filepath = genFilePathPS2(station);
-         System.out.println(filepath);
          CSVFile csv = new CSVFile();
          ParkingStation parkingStation = (ParkingStation) csv.readData(filepath);
          List<DataPoint> historicalData = pointsToList(parkingStation);
