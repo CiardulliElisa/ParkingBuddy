@@ -18,15 +18,16 @@ public class AsyncJobService {
 		runLongTask(jobId);
 		return jobId;
 	}
-
+	
 	@Async
 	public void runLongTask(String jobId) {
-		try {
-			Thread.sleep(15000);
-			jobs.put(jobId, "DONE: Task completed successfully.");
-		} catch (InterruptedException e) {
-			jobs.put(jobId, "ERROR: Task was interrupted.");
-		}
+	    try {
+	        Thread.sleep(15000);
+	        jobs.put(jobId, "DONE");
+	    } catch (Exception e) {
+	        jobs.put(jobId, "ERROR: " + e.getMessage());
+	        e.printStackTrace();
+	    }
 	}
 
 	public String getStatus(String jobId) {
