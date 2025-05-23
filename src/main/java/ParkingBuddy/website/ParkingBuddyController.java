@@ -1,5 +1,6 @@
 package ParkingBuddy.website;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,7 @@ import ParkingBuddy.Prediction.ParkingStationModel;
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 public class ParkingBuddyController{
@@ -123,6 +126,24 @@ public class ParkingBuddyController{
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                  .body("FError while executing the job: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping(value = "/long-process", produces = MediaType.TEXT_PLAIN_VALUE)
+    public void longProcess(HttpServletResponse response) throws IOException {
+        response.setContentType("text/plain");
+        PrintWriter writer = response.getWriter();
+
+        for (int i = 0; i < 10; i++) {
+            writer.write("Chunk " + i + "\n");
+            writer.flush();
+            try {
+                Thread.sleep(1000); // simulate work
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                writer.write("Error: interrupted\n");
+                break;
+            }
         }
     }
 }
