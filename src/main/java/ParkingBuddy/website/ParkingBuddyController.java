@@ -1,17 +1,13 @@
 package ParkingBuddy.website;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,19 +20,21 @@ import ParkingBuddy.Prediction.ParkingStationModel;
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 public class ParkingBuddyController{
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
     private final AsyncJobService jobService;
+    private final Map<String, ParkingStationModel> modelCache = new ConcurrentHashMap<>();
 //    @Autowired
 //    private SaveFilesMidnight saveFilesMidnight;
 
     public ParkingBuddyController(AsyncJobService jobService)throws MalformedURLException{
         this.jobService = jobService;
     }
+//    public ParkingBuddyController()throws IOException{
+//    }
 
     @GetMapping("/")
     public String home(@RequestParam(required = false) String municipality, Model model) throws MalformedURLException {
@@ -101,7 +99,13 @@ public class ParkingBuddyController{
     @ResponseBody
     public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
         System.out.println("get Data Points for = " + station);
-        ParkingStationModel predModel = new ParkingStationModel(station);
+        ParkingStationModel predModel = modelCache.computeIfAbsent(station, s -> {
+            try {
+                return new ParkingStationModel(s);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         return predModel.getDataPoints();
     }
 
@@ -109,11 +113,19 @@ public class ParkingBuddyController{
     @ResponseBody
     public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date, @RequestParam String capacity) throws Exception {
         System.out.println("get prediction for: " + station + " at " + date);
-        ParkingStationModel predModel = new ParkingStationModel(station);
+        ParkingStationModel predModel = modelCache.computeIfAbsent(station, s -> {
+            try {
+                return new ParkingStationModel(s);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         String[] dates = date.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(
                 Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0
         );
+
         return predModel.getPrediction(dateForPrediction);
     }
 

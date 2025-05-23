@@ -18,6 +18,16 @@ public class AsyncJobService {
 		runLongTask(jobId);
 		return jobId;
 	}
+
+	@Async
+	public void runLongTask(String jobId) {
+		try {
+			Thread.sleep(15000);
+			jobs.put(jobId, "DONE: Task completed successfully.");
+		} catch (InterruptedException e) {
+			jobs.put(jobId, "ERROR: Task was interrupted.");
+		}
+	}
 	
 	@Async
 	public void runLongTask(String jobId) {
@@ -26,7 +36,7 @@ public class AsyncJobService {
 	        jobs.put(jobId, "DONE");
 	    } catch (Exception e) {
 	        jobs.put(jobId, "ERROR: " + e.getMessage());
-	        e.printStackTrace();
+	        e.printStackTrace(); // log to Railway
 	    }
 	}
 
