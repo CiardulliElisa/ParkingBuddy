@@ -11,6 +11,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ParkingBuddyApplication {
 
 	public static void main(String[] args) {
+	    String port = System.getenv("PORT");
+	    System.out.println("PORT from Railway: " + port);
 		SpringApplication.run(ParkingBuddyApplication.class, args);
 	}
 }

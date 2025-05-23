@@ -31,10 +31,10 @@ public class ParkingBuddyController{
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
     private final AsyncJobService jobService;
-    @Autowired
-    private SaveFilesMidnight saveFilesMidnight;
+//    @Autowired
+//    private SaveFilesMidnight saveFilesMidnight;
 
-    public ParkingBuddyController(AsyncJobService jobService)throws IOException{
+    public ParkingBuddyController(AsyncJobService jobService)throws MalformedURLException{
         this.jobService = jobService;
     }
 
@@ -134,17 +134,17 @@ public class ParkingBuddyController{
         return status;
     }
     
-    @ResponseBody
-    @GetMapping("/run-job")
-    public ResponseEntity<String> runJob() {
-        try {
-            saveFilesMidnight.runAtMidnight();
-            return ResponseEntity.ok("Job successfully executed");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("FError while executing the job: " + e.getMessage());
-        }
-    }
+//    @ResponseBody
+//    @GetMapping("/run-job")
+//    public ResponseEntity<String> runJob() {
+//        try {
+//            saveFilesMidnight.runAtMidnight();
+//            return ResponseEntity.ok("Job successfully executed");
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                                 .body("FError while executing the job: " + e.getMessage());
+//        }
+//    }
 
 }
 
