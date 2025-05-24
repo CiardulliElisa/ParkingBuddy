@@ -37,7 +37,7 @@ public class ParkingStationModel implements Model {
 
      public ParkingStationModel(String station) throws Exception {
          System.out.println("Loading parking station data for: '" + station + "'");
-         String filepath = genFilePathPS2(station);
+         String filepath = genFilePathPS(station);
          CSVFile csv = new CSVFile();
          ParkingStation parkingStation = (ParkingStation) csv.readData(filepath);
          List<DataPoint> historicalData = pointsToList(parkingStation);
@@ -80,7 +80,6 @@ public class ParkingStationModel implements Model {
              futureInstance.setValue(2, iterator.getMonthValue());
              newList.add(new DataPoint(iterator,(int) Math.round(model.classifyInstance(futureInstance))));
          }
-
          return newList;
      }
 
@@ -89,7 +88,7 @@ public class ParkingStationModel implements Model {
       * input: Parking station to save
       * Output: URL for supabase, where the parking station should be stored
       * */     
-     private static String genFilePathPS2(String station) {
+     private static String genFilePathPS(String station) {
     	 String url = "https://kwwvugjyccrpvcbziwfj.supabase.co/storage/v1/object/public/historicaldata/";
     	 String encoded = URLEncoder.encode(station.replace("/", ""), StandardCharsets.UTF_8);
     	encoded = encoded.replace("+", "%20");

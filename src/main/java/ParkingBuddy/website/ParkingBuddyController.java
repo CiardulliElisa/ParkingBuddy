@@ -25,18 +25,10 @@ import ParkingBuddy.dataGetter.ParkingStation;
 public class ParkingBuddyController{
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
-    private final AsyncJobService jobService;
     private final ModelCacheService modelCacheService;
-//    @Autowired
-//    private SaveFilesMidnight saveFilesMidnight;
-
-    public ParkingBuddyController(AsyncJobService jobService, ModelCacheService modelCacheService)throws MalformedURLException{
-        this.jobService = jobService;
+    public ParkingBuddyController(ModelCacheService modelCacheService)throws MalformedURLException{
         this.modelCacheService = modelCacheService;
     }
-//    public ParkingBuddyController()throws IOException{
-//    }
-
 
     @GetMapping("/")
     public String home(@RequestParam(required = false) String municipality, Model model) throws MalformedURLException {
@@ -118,35 +110,6 @@ public class ParkingBuddyController{
 
         return model.getPrediction(dateForPrediction);
     }
-
-    @PostMapping("/start-job")
-    public String startJob(Model model) {
-        String jobId = jobService.startJob();
-        model.addAttribute("jobId", jobId);
-        return "job_started";
-    }
-
-    @GetMapping("/job-status")
-    @ResponseBody
-    public String getStatus(@RequestParam String jobId) {
-        String status = jobService.getStatus(jobId);
-        if ("NOT_FOUND".equals(status)) {
-            return "Job ID not found.";
-        }
-        return status;
-    }
-    
-//    @ResponseBody
-//    @GetMapping("/run-job")
-//    public ResponseEntity<String> runJob() {
-//        try {
-//            saveFilesMidnight.runAtMidnight();
-//            return ResponseEntity.ok("Job successfully executed");
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                                 .body("FError while executing the job: " + e.getMessage());
-//        }
-//    }
 
 }
 
