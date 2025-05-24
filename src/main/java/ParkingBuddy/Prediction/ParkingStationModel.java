@@ -73,7 +73,6 @@ public class ParkingStationModel implements Model {
              futureInstance.setValue(1, iterator.getDayOfWeek().getValue());
              futureInstance.setValue(2, iterator.getMonthValue());
              newList.add(new DataPoint(iterator,(int) Math.round(model.classifyInstance(futureInstance))));
-             System.out.println(iterator);
          }
 
          return newList;
