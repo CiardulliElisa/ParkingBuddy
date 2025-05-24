@@ -1,9 +1,12 @@
+<!--returns the parameter of the fetch request-->
 function getQueryParam(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
 }
 
+<!--function to load the trend and prediction chart of the chart html page-->
 function loadCharts() {
+    <!--getting the parameters from the fetch request-->
     const station = getQueryParam("station");
     const date = getQueryParam("date");
     const capacity = parseInt(getQueryParam("capacity"));
@@ -20,7 +23,7 @@ function loadCharts() {
         }
     });
 
-    // Fetch and render prediction
+    <!--Fetch and render prediction-->
     fetch(`/api/prediction?station=${encodeURIComponent(station)}&date=${encodeURIComponent(date)}&capacity=${encodeURIComponent(capacity)}`)
         .then(response => response.json())
         .then(dataPoints => {
@@ -69,7 +72,7 @@ function loadCharts() {
         document.getElementById("prediction-loading").innerHTML = "<p style='color:red;'>Failed to load chart data.</p>";
     })
 
-    // Fetch and render chart
+    //Fetch and render prediction
     fetch(`/api/dataPoints?station=${encodeURIComponent(station)}&capacity=${encodeURIComponent(capacity)}`)
         .then(response => response.json())
         .then(dataPoints => {
@@ -119,6 +122,7 @@ function loadCharts() {
     })
 }
 
+<!--event listener to trigger the loading of chart contents-->
 window.addEventListener('DOMContentLoaded', () => {
     loadCharts();
 

@@ -1,14 +1,13 @@
 package ParkingBuddy.website;
 
 import java.net.MalformedURLException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import ParkingBuddy.Prediction.ParkingStationModel;
+import ParkingBuddy.prediction.ParkingStationModel;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
 import jakarta.annotation.PostConstruct;

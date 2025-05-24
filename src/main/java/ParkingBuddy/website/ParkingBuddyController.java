@@ -1,11 +1,9 @@
 package ParkingBuddy.website;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
@@ -15,8 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ParkingBuddy.Prediction.DataPoint;
-import ParkingBuddy.Prediction.ParkingStationModel;
+import ParkingBuddy.prediction.DataPoint;
+import ParkingBuddy.prediction.ParkingStationModel;
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
@@ -88,21 +86,28 @@ public class ParkingBuddyController{
         return "chart";
     }
 
-
+    /*method to fetch the trend data of the last 7 days for the chart
+    * Input: name and maximal capacity of the parking station
+    * Output: List of data points to be displayed in the trend chart
+    * */
     @GetMapping("/api/dataPoints")
     @ResponseBody
     public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
         System.out.println("get Data Points for = " + station);
         ParkingStationModel model = modelCacheService.getModel(station);
-        return model.getDataPoints();
+        return model.getDataPoints(7);
     }
 
+    /*method to fetch the prediction data of the chosen day
+     * Input: name and maximal capacity of the parking station, day of the prediction
+     * Output: List of data points to be displayed in the prediction
+     * */
     @GetMapping("/api/prediction")
     @ResponseBody
     public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date, @RequestParam String capacity) throws Exception {
         System.out.println("get prediction for: " + station + " at " + date);
         ParkingStationModel model = modelCacheService.getModel(station);
-
+        //parse the date of type String to LocalDateTime
         String[] dates = date.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(
                 Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0

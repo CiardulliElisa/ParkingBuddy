@@ -35,32 +35,6 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 public class CSVFile implements ReadData, SaveData{
 
-
-//    public static void main(String[] args) throws IOException {
-//
-//      // get data to store
-//      LocalDateTime date =LocalDateTime.now().minusDays(10);
-//      LocalDateTime date2 = LocalDateTime.now();
-//      ParkingStation save = ParkingData.getHistoricalData(date, date2, "P03 - Piazza Walther");
-//
-//      //test method to generate file path
-//      System.out.println(genFilePathPS(save));
-//
-//      //save the data into the specified filepath
-//      CSVFile csvFile = new CSVFile();
-//      String filepath = "./historicalData/test1.csv";
-//      csvFile.saveData(save, filepath);
-//
-//		try {
-//			CSVFile reader = new CSVFile();
-//	    	OpenData dataStation = reader.readData("./historicalData/TURIST-PARKING.csv");
-//	    	System.out.println("data Station:" +dataStation);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//
-//  }
-
     @Override   
     /* 
      * Reads csv data from a specific filepath and creates the corresponding object
