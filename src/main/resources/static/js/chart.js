@@ -58,7 +58,7 @@ function loadCharts() {
 
                 series: [{
                     type: 'line',
-                    name: station,
+                    name: 'Free Slots',
                     data: dataPoints.map(point => point.freeSlots)
                 }]
             });
@@ -107,15 +107,7 @@ function loadCharts() {
                 },
                 series: [{
                     name: 'Free Slots',
-                    data: dataPoints.map(point => {
-                        const [year, month, day, hour, minute] = point.timestamp.match(/\d+/g).map(Number);
-                        const utcTime = Date.UTC(year, month - 1, day, hour, minute);
-                        return [utcTime, point.freeSlots];
-                    })
-                }, {
-                    name: 'Utilisation [%]',
-                    data: dataPoints.map(point => [new Date(point.timestamp).getTime(), Math.floor(point.freeSlots / capacity * 100)]),
-                    visible: false
+                    data: dataPoints.map(point => point.freeSlots)
                 }]
             });
 
