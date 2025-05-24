@@ -26,12 +26,18 @@ function loadCharts() {
         .then(dataPoints => {
             Highcharts.chart('prediction', {
                 title: { text: 'Prediction' },
-                xAxis: { type: 'number'
-                },plotOptions: {
-                    series:{
-                        pointStart: 1,
-                        pointInterval: 1
+                xAxis: {
+                    type: 'datetime',
+                    labels: {
+                        format: '{value:%H:%M}'
+                    },
+                    title: {
+                        text: 'Date'
                     }
+                },
+                tooltip: {
+                    xDateFormat: '%Y-%m-%d %H:%M',
+                    shared: true
                 },
                 yAxis: {
                     min: 0,
@@ -52,12 +58,17 @@ function loadCharts() {
 
                 series: [{
                     type: 'line',
-                    name: station,
-                    data: dataPoints.map(point => point.freeSlots)
+                    name: 'free slots',
+                    data: dataPoints.map(point => {
+                        const [year, month, day, hour, minute] = point.timestamp.match(/\d+/g).map(Number);
+                        const utcTime = Date.UTC(year, month - 1, day, hour, minute);
+                        return [utcTime, point.freeSlots];
+                    })
                 },{
                     type: 'line',
                     name: 'utilisation [%]',
-                    data: dataPoints.map(point => point.freeSlots/capacity * 100)
+                    data: dataPoints.map(point => [new Date(point.timestamp).getTime(), Math.floor(point.freeSlots / capacity * 100)]),
+                    visible: false
                 }]
             });
             document.getElementById("prediction-loading").style.display = "none";
@@ -74,7 +85,17 @@ function loadCharts() {
             Highcharts.chart('chart', {
                 title: { text: 'Last 7 days trend' },
                 xAxis: {
-                    categories: dataPoints.map(point => point.timestamp)
+                    type: 'datetime',
+                    labels: {
+                        format: '{value:%Y-%m-%d}'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                tooltip: {
+                    xDateFormat: '%Y-%m-%d %H:%M',
+                    shared: true
                 },
 
                 yAxis: {
@@ -94,13 +115,16 @@ function loadCharts() {
                     }]
                 },
                 series: [{
-                    type: 'line',
-                    name: station,
-                    data: dataPoints.map(point => point.freeSlots)
-                },{
-                    type: 'line',
-                    name: 'utilisation [%]',
-                    data: dataPoints.map(point => point.freeSlots/capacity * 100)
+                    name: 'Free Slots',
+                    data: dataPoints.map(point => {
+                        const [year, month, day, hour, minute] = point.timestamp.match(/\d+/g).map(Number);
+                        const utcTime = Date.UTC(year, month - 1, day, hour, minute);
+                        return [utcTime, point.freeSlots];
+                    })
+                }, {
+                    name: 'Utilisation [%]',
+                    data: dataPoints.map(point => [new Date(point.timestamp).getTime(), Math.floor(point.freeSlots / capacity * 100)]),
+                    visible: false
                 }]
             });
 
