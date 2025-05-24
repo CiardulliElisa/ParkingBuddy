@@ -58,17 +58,8 @@ function loadCharts() {
 
                 series: [{
                     type: 'line',
-                    name: 'free slots',
-                    data: dataPoints.map(point => {
-                        const [year, month, day, hour, minute] = point.timestamp.match(/\d+/g).map(Number);
-                        const utcTime = Date.UTC(year, month - 1, day, hour, minute);
-                        return [utcTime, point.freeSlots];
-                    })
-                },{
-                    type: 'line',
-                    name: 'utilisation [%]',
-                    data: dataPoints.map(point => [new Date(point.timestamp).getTime(), Math.floor(point.freeSlots / capacity * 100)]),
-                    visible: false
+                    name: station,
+                    data: dataPoints.map(point => point.freeSlots)
                 }]
             });
             document.getElementById("prediction-loading").style.display = "none";
