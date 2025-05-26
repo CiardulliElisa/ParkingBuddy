@@ -15,7 +15,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 
-public class ParkingStationModel implements Model {
+public class ParkingStationModel implements Model{
      public final Classifier model;
      private final Instances datasetStructure;
      public final List<DataPoint> listOfPoints;

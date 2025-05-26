@@ -23,25 +23,25 @@ public class ModelCacheService {
 	  }
 
 	    @PostConstruct
-	    /* Preloads every model into a HashMap, so we don't have to do it later
+	    /* 
+	     * Preloads every model into a HashMap, so it's faster during prediction
 	     * Input: none
 	     * Output: none
 	     */
 	    public void preloadModels() {
+	    	System.out.println(" -> Preloading models...");
 	        for (OpenData data : allStations) {
 	            try {
 	                Model model = new ParkingStationModel(data.getName());
 	                modelCache.put(data, model);
 	            } catch (Exception e) {
-	                System.out.println("Failed to load model for: " + data.getName() + " since data is empty");
+	                System.out.println("Data for '" + data.getName() + "' is empty");
 	            }
 	        }
-	        System.out.println("Finished preloading models");
+	        System.out.println(" -> Finished preloading models");
 	    }
 
-	    /* 
-	     * 
-	     */
+	    //Helper method to find model instance
 	    private OpenData findInstanceByName(String name) {
 	    	String normalized = normalize(name);
 	        return allStations.stream()
@@ -55,8 +55,9 @@ public class ModelCacheService {
 	    	return text.replaceAll("�", "").replaceAll("ä", "").replaceAll("à", "");
 	    }
 
-	    /* Gets the correct Model instance for the input string
-	     * 
+	    /* Fetches the preloaded model instance for the input string
+	     * Input: name of the OpenData instance we want to fetch the model for
+	     * Output: loaded model
 	     */
 	    public ParkingStationModel getModel(String name) {
 	        OpenData instance = findInstanceByName(name);
@@ -69,3 +70,4 @@ public class ModelCacheService {
 	        });
 	    }
 }
+
