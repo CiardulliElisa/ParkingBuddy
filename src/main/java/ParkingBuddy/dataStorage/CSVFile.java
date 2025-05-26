@@ -5,16 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,7 +25,6 @@ import org.reflections.Reflections;
 
 import ParkingBuddy.dataGetter.Coordinate;
 import ParkingBuddy.dataGetter.OpenData;
-import ParkingBuddy.dataGetter.ParkingStation;
 
 public class CSVFile implements ReadData, SaveData{
 
