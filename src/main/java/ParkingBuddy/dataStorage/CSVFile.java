@@ -35,80 +35,64 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 public class CSVFile implements ReadData, SaveData{
 
-    @Override   
-    /* 
-     * Reads csv data from a specific filepath and creates the corresponding object
-     * Input: filepath of csv file
-     * Output: created Object
-     */
-    public OpenData readData(String url) {
-        try {			
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3d3Z1Z2p5Y2NycHZjYnppd2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3OTg0MzMsImV4cCI6MjA2MzM3NDQzM30.zY6HG4u-EcxaTXj2aROltbfR9itfMN-iEYH1Qmcgaxg")
-                .GET()
-                .build();
+	@Override   
+	/* 
+	 * Reads csv data from a specific filepath and creates the corresponding object
+	 * Input: filepath of csv file
+	 * Output: created Object
+	 */
+	public OpenData readData(String filepath) {
+		try (
+				Reader reader = new FileReader(filepath);
+				CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
+				) {
+			List<CSVRecord> records = parser.getRecords();
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+			if (records.isEmpty()) {
+				throw new IllegalArgumentException("CSV-Datei ist leer");
+			}
+			//get class from list of subclasses
+			Class<? extends OpenData> clazz = findMatchingSubclass(parser.getHeaderMap().keySet());
 
-            if (response.statusCode() != 200) {
-                throw new RuntimeException("Fehler beim Download der Datei: HTTP " + response.statusCode());
-            }
+			CSVRecord record = records.get(0);
+			OpenData data = clazz.getDeclaredConstructor().newInstance();
 
-            try (
-                InputStream csvStream = response.body();
-                Reader reader = new InputStreamReader(csvStream);
-                CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
-            ) {
-                List<CSVRecord> records = parser.getRecords();
+			//set class variables
+			for (String classVariable : parser.getHeaderMap().keySet()) {
+				Field field = clazz.getDeclaredField(classVariable);
+				field.setAccessible(true);
 
-                if (records.isEmpty()) {
-                    throw new IllegalArgumentException("CSV-Datei ist leer");
-                }
-              //get class from list of subclasses
-        		Class<? extends OpenData> clazz = findMatchingSubclass(parser.getHeaderMap().keySet());
+				//if variables are of type list
+				if (Collection.class.isAssignableFrom(field.getType())) {
+					ParameterizedType listType = (ParameterizedType) field.getGenericType();
+					Class<?> genericClass = (Class<?>) listType.getActualTypeArguments()[0];
 
-        		CSVRecord record = records.get(0);
-        		OpenData data = clazz.getDeclaredConstructor().newInstance();
+					List<Object> aggregatedValues = new ArrayList<>();
 
-        		//set class variables
-        		for (String classVariable : parser.getHeaderMap().keySet()) {
-        			Field field = clazz.getDeclaredField(classVariable);
-        			field.setAccessible(true);
+					for (CSVRecord rec : records) {
+						String fieldStr = rec.get(classVariable);
+						if (fieldStr == null || fieldStr.isEmpty()) {
+							continue;
+						}
+						String[] items = fieldStr.split(";");
+						for (String item : items) {
+							Object parsedItem = parseValue(genericClass, item.trim(), field);
+							aggregatedValues.add(parsedItem);
+						}
+					}
+					field.set(data, aggregatedValues);
+				} else {
+					String raw = record.get(classVariable);
+					Object value = parseValue(field.getType(), raw, field);
+					field.set(data, value);
+				}
+			}
+			return data;
 
-        			//if variables are of type list
-        			if (Collection.class.isAssignableFrom(field.getType())) {
-        				ParameterizedType listType = (ParameterizedType) field.getGenericType();
-        				Class<?> genericClass = (Class<?>) listType.getActualTypeArguments()[0];
-
-        				List<Object> aggregatedValues = new ArrayList<>();
-
-        				for (CSVRecord rec : records) {
-        					String fieldStr = rec.get(classVariable);
-        					if (fieldStr == null || fieldStr.isEmpty()) {
-        						continue;
-        					}
-        					String[] items = fieldStr.split(";");
-        					for (String item : items) {
-        						Object parsedItem = parseValue(genericClass, item.trim(), field);
-        						aggregatedValues.add(parsedItem);
-        					}
-        				}
-        				field.set(data, aggregatedValues);
-        			} else {
-        				String raw = record.get(classVariable);
-        				Object value = parseValue(field.getType(), raw, field);
-        				field.set(data, value);
-        			}
-        		}
-        		return data;
-            }    		
-    	} catch (Exception e) {
-    		throw new RuntimeException("Failed to read data from CSV", e);
-    	}
-
-    }
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to read data from CSV", e);
+		}
+	}
     
     // Helper method to parse String
     private static Object parseValue(Class<?> type, String raw, Field field) throws Exception {

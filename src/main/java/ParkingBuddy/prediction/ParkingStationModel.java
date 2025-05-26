@@ -103,10 +103,8 @@ public class ParkingStationModel implements Model {
       * Output: URL for supabase, where the parking station should be stored
       * */     
      private static String genFilePathPS(String station) {
-    	 String url = "https://kwwvugjyccrpvcbziwfj.supabase.co/storage/v1/object/public/historicaldata/";
-    	 String encoded = URLEncoder.encode(station.replace("/", ""), StandardCharsets.UTF_8);
-    	encoded = encoded.replace("+", "%20");
-    	 return url + encoded + ".csv";
+  		String folder = "./src/main/resources/historicalData/";
+  		return folder + station.replace("/", "-") + ".csv";
      }
 
      /*reduces the number of DataPoints, so the model can be computed faster
