@@ -9,7 +9,7 @@ public class DataPoint {
 
     //constructor
     public DataPoint(LocalDateTime timestamp, int value) {
-        this.timestamp = timestamp;
+        this.timestamp = timestamp.plusHours(2);
         this.value = value;
     }
 }

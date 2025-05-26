@@ -62,7 +62,11 @@ function loadCharts() {
                 series: [{
                     type: 'line',
                     name: 'Free Slots',
-                    data: dataPoints.map(point => point.freeSlots)
+                    data: dataPoints.map(point =>
+                        ({
+                            x: new Date(point.timestamp).getTime(),
+                            y: point.value
+                        }))
                 }]
             });
             document.getElementById("prediction-loading").style.display = "none";
@@ -110,7 +114,11 @@ function loadCharts() {
                 },
                 series: [{
                     name: 'Free Slots',
-                    data: dataPoints.map(point => point.freeSlots)
+                    data: dataPoints.map(point =>
+                        ({
+                            x: new Date(point.timestamp).getTime(),
+                            y: point.value
+                        }))
                 }]
             });
 

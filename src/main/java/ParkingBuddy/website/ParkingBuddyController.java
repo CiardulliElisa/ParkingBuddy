@@ -95,7 +95,11 @@ public class ParkingBuddyController{
     public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
         System.out.println("get Data Points for = " + station);
         ParkingStationModel model = modelCacheService.getModel(station);
-        return model.getDataPoints(7);
+        List<DataPoint> points = model.getDataPoints(7);
+        for(DataPoint dp : points) {
+            System.out.println(dp.timestamp + " "+dp.value);
+        }
+        return points;
     }
 
     /*method to fetch the prediction data of the chosen day
@@ -113,7 +117,12 @@ public class ParkingBuddyController{
                 Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), 0, 0
         );
 
-        return model.getPrediction(dateForPrediction);
+        List<DataPoint> points = model.getPrediction(dateForPrediction);
+        for(DataPoint dp : points) {
+            System.out.println(dp.timestamp + " "+dp.value);
+        }
+
+        return points;
     }
 
 }
