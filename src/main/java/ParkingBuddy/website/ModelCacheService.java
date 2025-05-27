@@ -1,55 +1,73 @@
 package ParkingBuddy.website;
 
 import java.net.MalformedURLException;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import ParkingBuddy.Prediction.ParkingStationModel;
+import ParkingBuddy.dataGetter.OpenData;
 import ParkingBuddy.dataGetter.ParkingData;
 import ParkingBuddy.dataGetter.ParkingStation;
+import ParkingBuddy.prediction.Model;
+import ParkingBuddy.prediction.ParkingStationModel;
 import jakarta.annotation.PostConstruct;
 
 @Service
 public class ModelCacheService {
-	  private final Map<ParkingStation, ParkingStationModel> modelCache = new ConcurrentHashMap<>();
+	  private final Map<OpenData, Model> modelCache = new HashMap<>();
 	  private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
 	  
 	  public ModelCacheService() throws MalformedURLException{
-		  
 	  }
 
 	    @PostConstruct
+	    /* 
+	     * Preloads every model into a HashMap, so it's faster during prediction
+	     * Input: none
+	     * Output: none
+	     */
 	    public void preloadModels() {
-	        for (ParkingStation station : allStations) {
+	    	System.out.println(" -> Preloading models...");
+	        for (OpenData data : allStations) {
 	            try {
-	                ParkingStationModel model = new ParkingStationModel(station.getName());
-	                modelCache.put(station, model);
+	                Model model = new ParkingStationModel(data.getName());
+	                modelCache.put(data, model);
 	            } catch (Exception e) {
-	                System.out.println("Failed to load model for station: " + station.getName() + " since data is empty");
+	                System.out.println("Data for '" + data.getName() + "' is empty");
 	            }
 	        }
-	        System.out.println("Finished preloading models");
+	        System.out.println(" -> Finished preloading models");
 	    }
 
-	    public ParkingStation findStationByName(String name) {
+	    //Helper method to find model instance
+	    private OpenData findInstanceByName(String name) {
+	    	String normalized = normalize(name);
 	        return allStations.stream()
-	            .filter(s -> s.getName().equals(name))
+	            .filter(s -> normalize(s.getName()).equals(normalized))
 	            .findFirst()
-	            .orElseThrow(() -> new IllegalArgumentException("Unknown station: " + name));
+	            .orElseThrow(() -> new IllegalArgumentException("Unknown instance: " + name));
+	    }
+	    
+	    // Helper method to make sure characters 'ä' and 'à' get read correctly
+	    private String normalize(String text) {
+	    	return text.replaceAll("�", "").replaceAll("ä", "").replaceAll("à", "");
 	    }
 
-	    public ParkingStationModel getModel(String stationName) {
-	        ParkingStation station = findStationByName(stationName);
-	        return modelCache.computeIfAbsent(station, s -> {
+	    /* Fetches the preloaded model instance for the input string
+	     * Input: name of the OpenData instance we want to fetch the model for
+	     * Output: loaded model
+	     */
+	    public ParkingStationModel getModel(String name) {
+	        OpenData instance = findInstanceByName(name);
+	        return (ParkingStationModel) modelCache.computeIfAbsent(instance, i -> {
 	            try {
-	                return new ParkingStationModel(s.getName());
+	                return new ParkingStationModel(i.getName());
 	            } catch (Exception e) {
 	                throw new RuntimeException(e);
 	            }
 	        });
 	    }
 }
+

@@ -1,9 +1,12 @@
+<!--returns the parameter of the fetch request-->
 function getQueryParam(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
 }
 
+<!--function to load the trend and prediction chart of the chart html page-->
 function loadCharts() {
+    <!--getting the parameters from the fetch request-->
     const station = getQueryParam("station");
     const date = getQueryParam("date");
     const capacity = parseInt(getQueryParam("capacity"));
@@ -20,18 +23,24 @@ function loadCharts() {
         }
     });
 
-    // Fetch and render prediction
+    <!--Fetch and render prediction-->
     fetch(`/api/prediction?station=${encodeURIComponent(station)}&date=${encodeURIComponent(date)}&capacity=${encodeURIComponent(capacity)}`)
         .then(response => response.json())
         .then(dataPoints => {
             Highcharts.chart('prediction', {
                 title: { text: 'Prediction' },
-                xAxis: { type: 'number'
-                },plotOptions: {
-                    series:{
-                        pointStart: 1,
-                        pointInterval: 1
+                xAxis: {
+                    type: 'datetime',
+                    labels: {
+                        format: '{value:%H:%M}'
+                    },
+                    title: {
+                        text: 'Date'
                     }
+                },
+                tooltip: {
+                    xDateFormat: '%Y-%m-%d %H:%M',
+                    shared: true
                 },
                 yAxis: {
                     min: 0,
@@ -52,12 +61,12 @@ function loadCharts() {
 
                 series: [{
                     type: 'line',
-                    name: station,
-                    data: dataPoints.map(point => point.freeSlots)
-                },{
-                    type: 'line',
-                    name: 'utilisation [%]',
-                    data: dataPoints.map(point => point.freeSlots/capacity * 100)
+                    name: 'Free Slots',
+                    data: dataPoints.map(point =>
+                        ({
+                            x: new Date(point.timestamp).getTime(),
+                            y: point.value
+                        }))
                 }]
             });
             document.getElementById("prediction-loading").style.display = "none";
@@ -67,14 +76,24 @@ function loadCharts() {
         document.getElementById("prediction-loading").innerHTML = "<p style='color:red;'>Failed to load chart data.</p>";
     })
 
-    // Fetch and render chart
+    //Fetch and render prediction
     fetch(`/api/dataPoints?station=${encodeURIComponent(station)}&capacity=${encodeURIComponent(capacity)}`)
         .then(response => response.json())
         .then(dataPoints => {
             Highcharts.chart('chart', {
                 title: { text: 'Last 7 days trend' },
                 xAxis: {
-                    categories: dataPoints.map(point => point.timestamp)
+                    type: 'datetime',
+                    labels: {
+                        format: '{value:%Y-%m-%d}'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                tooltip: {
+                    xDateFormat: '%Y-%m-%d %H:%M',
+                    shared: true
                 },
 
                 yAxis: {
@@ -94,13 +113,12 @@ function loadCharts() {
                     }]
                 },
                 series: [{
-                    type: 'line',
-                    name: station,
-                    data: dataPoints.map(point => point.freeSlots)
-                },{
-                    type: 'line',
-                    name: 'utilisation [%]',
-                    data: dataPoints.map(point => point.freeSlots/capacity * 100)
+                    name: 'Free Slots',
+                    data: dataPoints.map(point =>
+                        ({
+                            x: new Date(point.timestamp).getTime(),
+                            y: point.value
+                        }))
                 }]
             });
 
@@ -112,6 +130,7 @@ function loadCharts() {
     })
 }
 
+<!--event listener to trigger the loading of chart contents-->
 window.addEventListener('DOMContentLoaded', () => {
     loadCharts();
 

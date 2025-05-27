@@ -3,5 +3,6 @@ package ParkingBuddy.dataStorage;
 import ParkingBuddy.dataGetter.OpenData;
 
 public interface ReadData {
-    public OpenData readData(String filepath);
+    //method to read the data from a file
+    OpenData readData(String url);
 }
