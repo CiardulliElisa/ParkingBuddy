@@ -19,10 +19,10 @@ function fetchAndRenderPredictionChart(station, date, capacity) {
                 xAxis: {
                     type: 'datetime',
                     labels: { format: '{value:%H:%M}' },
-                    title: { text: 'Date' }
+                    title: { text: 'Time' }
                 },
                 tooltip: {
-                    xDateFormat: '%Y-%m-%d %H:%M',
+                    xDateFormat: '%d-%m-%Y %H:%M',
                     shared: true
                 },
                 yAxis: {
@@ -73,11 +73,11 @@ function fetchAndRenderTrendChart(station, capacity) {
                 title: { text: 'Last 7 days trend' },
                 xAxis: {
                     type: 'datetime',
-                    labels: { format: '{value:%Y-%m-%d}' },
+                    labels: { format: '{value:%d.%m.%Y}' },
                     title: { text: 'Date' }
                 },
                 tooltip: {
-                    xDateFormat: '%Y-%m-%d %H:%M',
+                    xDateFormat: '%d.%m.%Y %H:%M',
                     shared: true
                 },
                 yAxis: {

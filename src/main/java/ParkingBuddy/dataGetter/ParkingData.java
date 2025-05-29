@@ -167,7 +167,7 @@ public class ParkingData extends GetData {
         return municipalities;
     }
 
-    //Retrieves all latest data for the given single parking station and saves it in a ParkinStation object
+    //Retrieves all latest data for the given parking station and saves it in a ParkingStation object
     public static ParkingStation getStationLatestData(String nameInput) throws MalformedURLException {
         String encodedName = URLEncoder.encode(nameInput, StandardCharsets.UTF_8).replace(".", "%2E");
 

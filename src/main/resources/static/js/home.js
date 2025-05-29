@@ -118,7 +118,7 @@ function setDropdownValue(stationName) {
     }
 }
 
-// Handle station dropdown changes by adding event listener
+// Handle station dropdown changes,
 function handleDropdownChange() {
     let dropdown = document.getElementById('parkingDropdown');
     let infoDiv = document.getElementById('stationInfo');
@@ -130,22 +130,22 @@ function handleDropdownChange() {
         let selectedName = this.value;
 
         if (selectedName) {
-            if (datePickerContainer) datePickerContainer.style.display = 'block';
-            if (submitBtn) submitBtn.style.display = 'inline-block';
+            datePickerContainer.style.display = 'block';
+            submitBtn.style.display = 'inline-block';
         } else {
-            if (datePickerContainer) datePickerContainer.style.display = 'none';
-            if (submitBtn) submitBtn.style.display = 'none';
+            datePickerContainer.style.display = 'none';
+            submitBtn.style.display = 'none';
             infoDiv.innerHTML = '';
             return;
         }
 
-        if (loading) loading.style.display = 'block';
+        loading.style.display = 'block';
         infoDiv.innerHTML = '';
 
         fetch(`/api/stationData?name=${encodeURIComponent(selectedName)}`)
             .then(response => response.json())
             .then(data => {
-                if (loading) loading.style.display = 'none';
+                loading.style.display = 'none';
 
                 if (data.coordinates) {
                     changeMap(data.coordinates.lat, data.coordinates.lng);
@@ -157,14 +157,14 @@ function handleDropdownChange() {
                 }
             })
             .catch(error => {
-                if (loading) loading.style.display = 'none';
+                loading.style.display = 'none';
                 infoDiv.innerHTML = '<p>Error loading station data.</p>';
                 console.error(error);
             });
     });
 }
 
-// Display the station data
+// Display the selected station details
 function displayStationData(data) {
     if (!data) {
         document.getElementById('stationInfo').innerHTML = '<p>No data to display.</p>';
@@ -198,7 +198,7 @@ function displayStationData(data) {
     document.getElementById('stationInfo').innerHTML = infoHTML;
 }
 
-// Calculate how long ago the data was updated
+// Calculate how long ago the given timestamp was
 function calculateTimeAgo(timestamp) {
     const timestampDate = new Date(timestamp);
     const now = new Date();
