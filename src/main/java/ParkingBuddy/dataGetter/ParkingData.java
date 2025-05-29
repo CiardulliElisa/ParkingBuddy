@@ -15,16 +15,22 @@ import java.util.*;
 
 public class ParkingData extends GetData {
 
-    // Returns ParkingStation - all data for a certain parking station for a certain interval of time
-    // @param startTime and endTime - start and end of the interval of time we are interested in
-    // @param code - the code of the parking lot we are interested in
+    /**
+     * Retrieves the historical data in between two dates for a certain parking station
+     *
+     * @param now the most recent date
+     * @param before the least recent date
+     * @param name the name of the station
+     *
+     * @return the selected station as a ParkingStation object
+     */
     public static ParkingStation getHistoricalData(LocalDateTime now, LocalDateTime before, String name) throws IOException {
         URL url = new URL(generateHistoricalURL(now, before, name));
         String response = readData(url, true);
         return parseParkingStationData(response);
     }
 
-    // Method to parse JSON response and create a ParkingStationData object
+    //Parses JSON data representing a parking station and converts it into a ParkingStation object.
     private static ParkingStation parseParkingStationData(String jsonResponse) throws IOException {
 
         JsonNode dataArray = fetchJsonArray(jsonResponse);
@@ -44,6 +50,7 @@ public class ParkingData extends GetData {
         return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
     }
 
+    // Parses a JSON response and extracts the "data" array node.
     private static JsonNode fetchJsonArray(String jsonResponse) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.readTree(jsonResponse);
@@ -54,6 +61,8 @@ public class ParkingData extends GetData {
         return dataArray;
     }
 
+
+    //Parses a JsonNode containing coordinates into a Coordinate object
     private static Coordinate parseCoordinates(JsonNode node) {
         JsonNode coordinateNode = node.has("scoordinate") ? node.get("scoordinate") : null;
         if(!coordinateNode.isNull() && coordinateNode.has("x") && coordinateNode.has("y")) {
@@ -64,6 +73,13 @@ public class ParkingData extends GetData {
         else return null;
     }
 
+
+    /**
+     * Parses the timestamps and corresponding values from a JsonNode
+     *
+     * @param dataArray the JsonNode containing all timestamps and corresponding values
+     * @return a Tuple containing two arrays, one for the timestamps as LocalDateTimes and one for the values as Integers
+     */
     private static Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> parseTimestampValues(JsonNode dataArray) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
 
@@ -84,11 +100,13 @@ public class ParkingData extends GetData {
         return new Tuple<>(timestamps, free_spots);
     }
 
+    // Formats a given date into the yyyy-MM-dd format
     private static String formatDate(LocalDateTime date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return date.format(formatter);
     }
 
+    // Generates an url in string format for fetching the free_spots at given times, the coordinates, the capacity, the municipality and the name of a parking station
     private static String generateHistoricalURL(LocalDateTime startDate, LocalDateTime endDate, String name) throws UnsupportedEncodingException {
         name = URLEncoder.encode(name, StandardCharsets.UTF_8).replace(".", "%2E");;
         return "https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/" +
@@ -99,7 +117,8 @@ public class ParkingData extends GetData {
                 "%22&where=tname.eq.free&shownull=false&distinct=true&timezone=UTC+2&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality";
     }
 
-    public static Set<ParkingStation> findAllLatestData() throws MalformedURLException {
+    // Retrieves all available parking stations and saves them as ParkingStation objects, with coordinates and names
+    public static Set<ParkingStation> getAllStations() throws MalformedURLException {
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
                 + "&where=tname.eq.free"
@@ -123,6 +142,7 @@ public class ParkingData extends GetData {
         return stations;
     }
 
+    // Retrieves a list of all municipalities that contain parking stations
     public static Set<String> getAllMunicipalities() throws MalformedURLException {
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
@@ -147,47 +167,45 @@ public class ParkingData extends GetData {
         return municipalities;
     }
 
-    public static Set<ParkingStation> getStationLatestData(String nameInput) throws MalformedURLException {
+    //Retrieves all latest data for the given single parking station and saves it in a ParkinStation object
+    public static ParkingStation getStationLatestData(String nameInput) throws MalformedURLException {
+        String encodedName = URLEncoder.encode(nameInput, StandardCharsets.UTF_8).replace(".", "%2E");
 
-        String encodedName = URLEncoder.encode(nameInput, StandardCharsets.UTF_8).replace(".", "%2E");;
-
+        // Construct URL with parameters; combine where clauses properly if API supports multiple conditions
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
-                + "&where=tname.eq.free"
-                + "&where=sname.eq." + encodedName
+                + "&where=tname.eq.free and sname.eq." + encodedName
                 + "&timezone=UTC+2&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality");
-
-        Set<ParkingStation> stations = new HashSet<>();
 
         try {
             String response = readData(url, false);
             JsonNode dataArray = fetchJsonArray(response);
 
             if (!dataArray.isEmpty()) {
+                JsonNode node = dataArray.get(0); // get the first element only
 
-                // For each parking station entry in dataArray, create a ParkingStation instance
-                for (JsonNode node : dataArray) {
-                    String name = node.path("sname").asText("Unknown");
-                    Coordinate coordinates = parseCoordinates(node);
+                String name = node.path("sname").asText("Unknown");
+                Coordinate coordinates = parseCoordinates(node);
 
-                    int capacity = node.path("smetadata.capacity").asInt(-1);
-                    String municipality = node.path("smetadata.municipality").asText("Unknown");
+                int capacity = node.path("smetadata.capacity").asInt(-1);
+                String municipality = node.path("smetadata.municipality").asText("Unknown");
 
-                    Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> timestamp_values = parseTimestampValues(dataArray);
-                    ArrayList<LocalDateTime> timestamps = timestamp_values._1();
-                    ArrayList<Integer> free_spots = timestamp_values._2();
+                // Extract timestamps and free spots for this node, assuming parseTimestampValues can work on a single node or adjust accordingly
+                Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> timestamp_values = parseTimestampValues(dataArray);
+                ArrayList<LocalDateTime> timestamps = timestamp_values._1();
+                ArrayList<Integer> free_spots = timestamp_values._2();
 
-                    ParkingStation station = new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
-                    stations.add(station);
-                }
+                return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return stations;
+
+        return null;
     }
 
+    // Retrieves the set of all parking stations in the given municipality
     public static Set<ParkingStation> getLatestByMunicipality(String municipalityInput) throws MalformedURLException {
         Set<ParkingStation> stations = new HashSet<>();
 

@@ -23,7 +23,7 @@ public class HistoricalData{
     
     static {
         try {
-            allStations = ParkingData.findAllLatestData();
+            allStations = ParkingData.getAllStations();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

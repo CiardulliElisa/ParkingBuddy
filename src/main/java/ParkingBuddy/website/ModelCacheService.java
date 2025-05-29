@@ -17,7 +17,7 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class ModelCacheService {
 	private final Map<OpenData, Model> modelCache = new HashMap<>();
-	private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+	private final Set<ParkingStation> allStations = ParkingData.getAllStations();
 
 	public ModelCacheService() throws MalformedURLException{
 	}

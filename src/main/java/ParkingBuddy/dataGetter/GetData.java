@@ -12,9 +12,13 @@ public abstract class GetData {
     private static final String CLIENT_ID = "opendatahub-bootcamp-2025";
     private static final String CLIENT_SECRET = "QiMsLjDpLi5ffjKRkI7eRgwOwNXoU9l1";
 
-    // Returns ParkingStation - all data for a certain parking station for a certain interval of time
-    // @param startTime and endTime - start and end of the interval of time we are interested in
-    // @param code - the code of the parking lot we are interested in
+    /**
+     * Retrieves data from the specified URL.
+     *
+     * @param url the URL from which to retrieve data
+     * @param historical if true, an access token is generated and used for authorization
+     * @return the JSON response as a String
+     */
     public static String readData(URL url, Boolean historical) throws IOException {
 
         String accessToken = null;
@@ -52,7 +56,11 @@ public abstract class GetData {
 
 
 
-    // Returns an access token that is used to retrieve data for 48 hours
+    /**
+     * Retrieves an access token that is valid for 48 hours.
+     *
+     * @return the access token as a String
+     */
     public static String generateAccessToken() throws IOException {
         URL url = new URL(TOKEN_URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

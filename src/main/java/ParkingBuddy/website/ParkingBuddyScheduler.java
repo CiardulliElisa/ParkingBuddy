@@ -19,7 +19,7 @@ public class ParkingBuddyScheduler {
     public void updateHistoricalData() throws IOException {
         LocalDateTime startDate = LocalDateTime.now().minusYears(1);
         LocalDateTime endDate = LocalDateTime.now();
-        Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+        Set<ParkingStation> allStations = ParkingData.getAllStations();
         HistoricalData.saveFiles(startDate, endDate, allStations);
     }
 }

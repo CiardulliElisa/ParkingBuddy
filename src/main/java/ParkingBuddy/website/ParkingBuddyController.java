@@ -21,7 +21,7 @@ import ParkingBuddy.dataGetter.ParkingStation;
 
 @Controller
 public class ParkingBuddyController{
-    private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
+    private final Set<ParkingStation> allStations = ParkingData.getAllStations();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
     private final ModelCacheService modelCacheService;
 
@@ -66,8 +66,8 @@ public class ParkingBuddyController{
     @GetMapping("/api/stationData")
     @ResponseBody
     public ParkingStation getStationData(@RequestParam String name) throws MalformedURLException {
-        Set<ParkingStation> stations = ParkingData.getStationLatestData(name);
-        return stations.stream().findFirst().orElse(null);
+        ParkingStation station = ParkingData.getStationLatestData(name);
+        return station;
     }
 
     /* Fetching the names and coordinates of all stations in order to pin their locations on the map
