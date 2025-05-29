@@ -24,6 +24,7 @@ public class ParkingBuddyController{
     private final Set<ParkingStation> allStations = ParkingData.findAllLatestData();
     private final Set<String> allMunicipalities = ParkingData.getAllMunicipalities();
     private final ModelCacheService modelCacheService;
+
     public ParkingBuddyController(ModelCacheService modelCacheService)throws MalformedURLException{
         this.modelCacheService = modelCacheService;
     }
