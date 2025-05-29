@@ -129,7 +129,6 @@ function handleDropdownChange() {
     dropdown.addEventListener('change', function () {
         let selectedName = this.value;
 
-        // Toggle date picker and submit button visibility
         if (selectedName) {
             if (datePickerContainer) datePickerContainer.style.display = 'block';
             if (submitBtn) submitBtn.style.display = 'inline-block';
