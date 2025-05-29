@@ -29,8 +29,7 @@ import ParkingBuddy.dataGetter.OpenData;
 public class CSVFile implements ReadData, SaveData{
 
 	@Override   
-	/* 
-	 * Reads csv data from a specific filepath and creates the corresponding object
+	/* Reads csv data from a specific filepath and creates the corresponding object instance
 	 * Input: filepath of csv file
 	 * Output: created Object
 	 */

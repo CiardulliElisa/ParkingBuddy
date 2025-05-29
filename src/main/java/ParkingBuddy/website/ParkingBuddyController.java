@@ -70,6 +70,10 @@ public class ParkingBuddyController{
         return stations.stream().findFirst().orElse(null);
     }
 
+    /* Fetching the names and coordinates of all stations in order to pin their locations on the map
+     * Input: none
+     * Output: Map with names and coordinates of parking stations
+     */
     @GetMapping("/api/points")
     @ResponseBody
     public Map<String, Coordinate> getPoints() {    	
@@ -95,7 +99,7 @@ public class ParkingBuddyController{
     @ResponseBody
     public List<DataPoint> getDataPoints(@RequestParam String station, @RequestParam String capacity) throws Exception {
         System.out.println("get Data Points for = " + station);
-        ParkingStationModel model = modelCacheService.getModel(station);
+        ParkingStationModel model = (ParkingStationModel) modelCacheService.getModel(station);
         List<DataPoint> points = model.getDataPoints(7);
         for(DataPoint dp : points) {
             System.out.println(dp.timestamp + " "+dp.value);
@@ -111,7 +115,7 @@ public class ParkingBuddyController{
     @ResponseBody
     public List<DataPoint> getPrediction(@RequestParam String station, @RequestParam String date, @RequestParam String capacity) throws Exception {
         System.out.println("get prediction for: " + station + " at " + date);
-        ParkingStationModel model = modelCacheService.getModel(station);
+        ParkingStationModel model = (ParkingStationModel) modelCacheService.getModel(station);
         //parse the date of type String to LocalDateTime
         String[] dates = date.split("-");
         LocalDateTime dateForPrediction = LocalDateTime.of(
