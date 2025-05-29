@@ -9,6 +9,11 @@ function fetchAndRenderPredictionChart(station, date, capacity) {
     fetch(`/api/prediction?station=${encodeURIComponent(station)}&date=${encodeURIComponent(date)}&capacity=${encodeURIComponent(capacity)}`)
         .then(response => response.json())
         .then(dataPoints => {
+            if (!Array.isArray(dataPoints) || dataPoints.length === 0) {
+                document.getElementById("prediction-loading").innerHTML = "<p style='color:orange;'>No prediction data available.</p>";
+                return;
+            }
+
             Highcharts.chart('prediction', {
                 title: { text: 'Prediction' },
                 xAxis: {
@@ -59,6 +64,11 @@ function fetchAndRenderTrendChart(station, capacity) {
     fetch(`/api/dataPoints?station=${encodeURIComponent(station)}&capacity=${encodeURIComponent(capacity)}`)
         .then(response => response.json())
         .then(dataPoints => {
+            if (!Array.isArray(dataPoints) || dataPoints.length === 0) {
+                document.getElementById("chart-loading").innerHTML = "<p style='color:orange;'>No historical data available.</p>";
+                return;
+            }
+
             Highcharts.chart('chart', {
                 title: { text: 'Last 7 days trend' },
                 xAxis: {

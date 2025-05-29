@@ -164,7 +164,7 @@ function handleDropdownChange() {
     });
 }
 
-// Display the station data in the infoDiv
+// Display the station data
 function displayStationData(data) {
     if (!data) {
         document.getElementById('stationInfo').innerHTML = '<p>No data to display.</p>';
