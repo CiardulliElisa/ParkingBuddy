@@ -53,21 +53,15 @@ public class ParkingBuddyController{
     public String predictionFormSubmit(@RequestParam String station, @RequestParam String date, Model model) throws MalformedURLException {
         model.addAttribute("stationNames", allStations);
         int capacity = -1;
-        Set<ParkingStation> myStation = ParkingData.getStationLatestData(station);
-        for(ParkingStation s : myStation) {
-            if(s.getName().equals(station)) {
-                capacity = s.getCapacity();
-                break;
-            }
-        }
+        ParkingStation myStation = ParkingData.getStationLatestData(station);
+        capacity = myStation.getCapacity();
         return "redirect:/chart?station=" + station + "&date=" + date + "&capacity=" + capacity;
     }
 
     @GetMapping("/api/stationData")
     @ResponseBody
     public ParkingStation getStationData(@RequestParam String name) throws MalformedURLException {
-        ParkingStation station = ParkingData.getStationLatestData(name);
-        return station;
+        return ParkingData.getStationLatestData(name);
     }
 
     /* Fetching the names and coordinates of all stations in order to pin their locations on the map

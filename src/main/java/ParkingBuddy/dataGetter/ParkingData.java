@@ -133,7 +133,7 @@ public class ParkingData extends GetData {
             for (JsonNode node : dataArray) {
                 String name = node.path("sname").asText(null);
                 Coordinate coordinates = parseCoordinates(node);
-                ParkingStation station = new ParkingStation(name, "", 0, coordinates, new ArrayList<>(), new ArrayList<>());
+                ParkingStation station = new ParkingStation(name, "", -1, coordinates, new ArrayList<>(), new ArrayList<>());
                 stations.add(station);
             }
         } catch (Exception e) {
@@ -174,7 +174,7 @@ public class ParkingData extends GetData {
         // Construct URL with parameters; combine where clauses properly if API supports multiple conditions
         URL url = new URL("https://mobility.api.opendatahub.com/v2/flat/ParkingStation/*/latest"
                 + "?limit=-1&offset=0&shownull=false&distinct=true"
-                + "&where=tname.eq.free and sname.eq." + encodedName
+                + "&where=tname.eq.free&where=sname.eq." + encodedName
                 + "&timezone=UTC+2&select=mvalue,scoordinate,smetadata.capacity,sname,smetadata.municipality");
 
         try {
@@ -190,13 +190,12 @@ public class ParkingData extends GetData {
                 int capacity = node.path("smetadata.capacity").asInt(-1);
                 String municipality = node.path("smetadata.municipality").asText("Unknown");
 
-                // Extract timestamps and free spots for this node, assuming parseTimestampValues can work on a single node or adjust accordingly
                 Tuple<ArrayList<LocalDateTime>, ArrayList<Integer>> timestamp_values = parseTimestampValues(dataArray);
                 ArrayList<LocalDateTime> timestamps = timestamp_values._1();
                 ArrayList<Integer> free_spots = timestamp_values._2();
 
                 return new ParkingStation(name, municipality, capacity, coordinates, timestamps, free_spots);
-            }
+                }
 
         } catch (Exception e) {
             e.printStackTrace();
